@@ -911,6 +911,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&a
 const clone = o => JSON.parse(JSON.stringify(o));
 const fmt = n => Number(n).toLocaleString('en-AU');
 const KEY = 'agent-nexus-demo-v2';
+const IN_FRAME = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
 
 function hash(str) { // two FNV-1a passes → 16 hex chars; good enough to demo a hash chain
   let h1 = 0x811c9dc5, h2 = 0x01000193 ^ 0x5bd1e995;
@@ -1620,7 +1621,7 @@ function openExport() {
       <div class="scan-stats"><div><b>${pack.inventory.length}</b><small>Agents in inventory</small></div><div><b>${pack.decisions.length}</b><small>Review decisions</small></div><div><b>${pack.incidents.length}</b><small>Incident cases</small></div><div><b>${pack.auditLog.length}</b><small>Audit events</small></div></div>
       <div class="form-grid" style="margin-bottom:14px"><div><small>Period</small>${pack.period}</div><div><small>Chain head</small><span class="mono">${pack.chainHead}</span></div><div><small>Chain integrity</small>${pack.chainVerified ? statusChip('Approved').replace('Approved', 'Verified, no gaps') : statusChip('Rejected').replace('Rejected', 'Broken chain')}</div><div><small>Frameworks</small>${pack.frameworks.length} mapped</div></div>
       <pre class="console" style="height:300px;white-space:pre-wrap">${esc(json.slice(0, 2600))}\n…</pre></div>
-    <footer><button class="btn" data-act="copypack">Copy JSON</button><button class="btn primary" data-act="dlpack">${ICON.download} Download JSON</button></footer>`);
+    <footer>${IN_FRAME ? '<span class="small muted" style="margin-right:auto;align-self:center">Download is available when opened from GitHub Pages.</span><button class="btn primary" data-act="copypack">Copy JSON</button>' : `<button class="btn" data-act="copypack">Copy JSON</button><button class="btn primary" data-act="dlpack">${ICON.download} Download JSON</button>`}</footer>`);
   openExport.json = json;
   audit(ME.name, 'Policy', `Auditor pack generated (chain head ${pack.chainHead})`, '');
 }
