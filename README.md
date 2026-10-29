@@ -27,6 +27,7 @@ src/styles.css   design tokens and components (light + dark)
 src/data.js      demo data: platforms, agents, tools, MCP servers, skills, models, reviews, incidents
 src/app.js       hash-routed app, scanner, graph (Cytoscape.js), workbench, audit chain
 build.py         inlines src/ into index.html (and dist/artifact.html)
+scanner/         real read-only AWS scanner (Python): see scanner/README.md
 ```
 
 Edit files in `src/`, then run `python3 build.py`.

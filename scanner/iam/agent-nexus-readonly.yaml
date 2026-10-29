@@ -1,0 +1,118 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Agent Nexus read-only scanner role. Lets Agent Nexus list AI agents, MCP gateways,
+  models and model-usage events in this account. It cannot invoke models or agents,
+  read documents, or change anything.
+
+Parameters:
+  ScannerPrincipalArn:
+    Type: String
+    Description: ARN of the identity that runs the scanner (an IAM role or account root ARN).
+  ExternalId:
+    Type: String
+    NoEcho: true
+    MinLength: 16
+    Description: Shared secret the scanner must present when assuming this role.
+  RoleName:
+    Type: String
+    Default: AgentNexusReadOnly
+
+Resources:
+  ScannerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref RoleName
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { AWS: !Ref ScannerPrincipalArn }
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals: { "sts:ExternalId": !Ref ExternalId }
+      Tags:
+        - { Key: owner, Value: ai-risk }
+        - { Key: agent-nexus:component, Value: scanner }
+      Policies:
+        - PolicyName: AgentNexusDiscovery
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: BedrockAgentsAndModels
+                Effect: Allow
+                Action:
+                  - bedrock:ListAgents
+                  - bedrock:GetAgent
+                  - bedrock:ListAgentAliases
+                  - bedrock:ListAgentActionGroups
+                  - bedrock:GetAgentActionGroup
+                  - bedrock:ListAgentKnowledgeBases
+                  - bedrock:ListAgentCollaborators
+                  - bedrock:GetKnowledgeBase
+                  - bedrock:ListDataSources
+                  - bedrock:GetDataSource
+                  - bedrock:ListImportedModels
+                  - bedrock:ListCustomModels
+                  - bedrock:ListMarketplaceModelEndpoints
+                  - bedrock:ListProvisionedModelThroughputs
+                  - bedrock:ListGuardrails
+                  - bedrock:ListFoundationModels
+                  - bedrock:ListTagsForResource
+                Resource: "*"
+              - Sid: AgentCore
+                Effect: Allow
+                Action:
+                  - bedrock-agentcore:ListAgentRuntimes
+                  - bedrock-agentcore:GetAgentRuntime
+                  - bedrock-agentcore:ListGateways
+                  - bedrock-agentcore:GetGateway
+                  - bedrock-agentcore:ListGatewayTargets
+                  - bedrock-agentcore:GetGatewayTarget
+                  - bedrock-agentcore:ListRegistries
+                  - bedrock-agentcore:ListRegistryRecords
+                Resource: "*"
+              - Sid: SelfHostedModels
+                Effect: Allow
+                Action:
+                  - sagemaker:ListEndpoints
+                  - sagemaker:DescribeEndpoint
+                  - sagemaker:DescribeEndpointConfig
+                  - sagemaker:DescribeModel
+                  - sagemaker:ListInferenceComponents
+                  - sagemaker:DescribeInferenceComponent
+                  - sagemaker:ListTags
+                  - ecs:ListTaskDefinitions
+                  - ecs:DescribeTaskDefinition
+                  - cloudwatch:GetMetricStatistics
+                Resource: "*"
+              - Sid: ModelUsage
+                Effect: Allow
+                Action: cloudtrail:LookupEvents
+                Resource: "*"
+              - Sid: AgentCardProbe
+                Effect: Allow
+                Action: apigateway:GET
+                Resource:
+                  - arn:aws:apigateway:*::/restapis
+                  - arn:aws:apigateway:*::/restapis/*/stages
+                  - arn:aws:apigateway:*::/apis
+              - Sid: NeverTouchData
+                Effect: Deny
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                  - bedrock:InvokeAgent
+                  - bedrock:Retrieve
+                  - bedrock:RetrieveAndGenerate
+                  - bedrock-agentcore:InvokeAgentRuntime
+                  - bedrock-agentcore:InvokeGateway
+                  - sagemaker:InvokeEndpoint
+                  - sagemaker:InvokeEndpointWithResponseStream
+                  - s3:GetObject
+                Resource: "*"
+
+Outputs:
+  RoleArn:
+    Description: Pass this to the scanner as --role-arn
+    Value: !GetAtt ScannerRole.Arn

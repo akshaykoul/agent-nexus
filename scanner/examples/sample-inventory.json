@@ -1,0 +1,689 @@
+{
+  "schema": "agent-nexus/inventory@0.1",
+  "platform": "aws",
+  "account": "482177301956",
+  "startedAt": "2026-10-29T20:12:56+00:00",
+  "finishedAt": "2026-10-29T20:12:56+00:00",
+  "regions": [
+    "ap-southeast-2"
+  ],
+  "summary": {
+    "assets": {
+      "agent": 4,
+      "model": 6,
+      "tool": 5,
+      "knowledge_base": 1,
+      "data_source": 2,
+      "mcp_server": 3,
+      "registry_record": 1,
+      "guardrail": 1,
+      "principal": 2
+    },
+    "findings": {
+      "critical": 1,
+      "high": 5,
+      "medium": 5,
+      "low": 2,
+      "info": 0
+    },
+    "errors": 0,
+    "cloudtrailEventsRead": 4
+  },
+  "assets": [
+    {
+      "id": "a2a:https://abc123.execute-api.ap-southeast-2.amazonaws.com/prod",
+      "kind": "agent",
+      "name": "Broker Document Checker",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": null,
+      "attributes": {
+        "service": "A2A agent (API Gateway)",
+        "protocol": "A2A",
+        "card": "https://abc123.execute-api.ap-southeast-2.amazonaws.com/prod/.well-known/agent-card.json",
+        "url": "https://brokers.example/doc-check",
+        "version": "1.1.0",
+        "skills": [
+          "Check income documents"
+        ],
+        "discoveredVia": "A2A agent card probe"
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/DOCCHK01",
+      "kind": "agent",
+      "name": "broker-doc-check",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/DOCCHK01",
+      "attributes": {
+        "service": "Amazon Bedrock Agents",
+        "agentId": "DOCCHK01",
+        "status": "PREPARED",
+        "role": "arn:aws:iam::482177301956:role/DocCheckRole",
+        "memory": false,
+        "guardrail": "gr-lending",
+        "guardrailVersion": "3",
+        "deployedAliases": [],
+        "environment": "Draft only",
+        "discoveredVia": "bedrock-agent:ListAgents"
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q",
+      "kind": "agent",
+      "name": "home-loan-preassess",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q",
+      "attributes": {
+        "service": "Amazon Bedrock Agents",
+        "agentId": "HLPA7K2Q",
+        "status": "PREPARED",
+        "role": "arn:aws:iam::482177301956:role/service-role/HomeLoanAgentRole",
+        "collaboration": "SUPERVISOR",
+        "memory": false,
+        "deployedAliases": [
+          "prod"
+        ],
+        "environment": "Deployed",
+        "owner": "priya.natarajan",
+        "discoveredVia": "bedrock-agent:ListAgents"
+      },
+      "tags": {
+        "owner": "priya.natarajan"
+      }
+    },
+    {
+      "id": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:runtime/rt-a2a",
+      "kind": "agent",
+      "name": "settlement-tracker",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:runtime/rt-a2a",
+      "attributes": {
+        "service": "AgentCore Runtime",
+        "protocol": "A2A",
+        "status": "READY",
+        "network": "PUBLIC",
+        "auth": "IAM (SigV4)",
+        "role": "arn:aws:iam::482177301956:role/SettlementRuntimeRole",
+        "artifact": "482177301956.dkr.ecr.ap-southeast-2.amazonaws.com/settle:1.2",
+        "envVarNames": [
+          "BROKER_API_KEY",
+          "LOG_LEVEL",
+          "MAX_TOKENS"
+        ],
+        "discoveredVia": "bedrock-agentcore:ListAgentRuntimes"
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock:ap-southeast-2:482177301956:knowledge-base/KB1/data-source/DS2",
+      "kind": "data_source",
+      "name": "competitor-rates",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": null,
+      "attributes": {
+        "type": "WEB",
+        "external": true
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock:ap-southeast-2:482177301956:knowledge-base/KB1/data-source/DS1",
+      "kind": "data_source",
+      "name": "credit-policy",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": null,
+      "attributes": {
+        "type": "S3",
+        "location": "arn:aws:s3:::hlb-credit-policy",
+        "external": false
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock:ap-southeast-2:482177301956:guardrail/gr-lending",
+      "kind": "guardrail",
+      "name": "lending-guardrail",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": "arn:aws:bedrock:ap-southeast-2:482177301956:guardrail/gr-lending",
+      "attributes": {
+        "service": "Bedrock Guardrails",
+        "version": "3"
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock:ap-southeast-2:482177301956:knowledge-base/KB1",
+      "kind": "knowledge_base",
+      "name": "lending-policy-kb",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": "arn:aws:bedrock:ap-southeast-2:482177301956:knowledge-base/KB1",
+      "attributes": {
+        "service": "Bedrock Knowledge Base",
+        "type": "VECTOR",
+        "status": "ACTIVE",
+        "storage": "OPENSEARCH_SERVERLESS"
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:runtime/rt-mcp",
+      "kind": "mcp_server",
+      "name": "core-lending-mcp",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:runtime/rt-mcp",
+      "attributes": {
+        "service": "AgentCore Runtime",
+        "protocol": "MCP",
+        "status": "READY",
+        "auth": "Custom JWT",
+        "discoveredVia": "bedrock-agentcore:ListAgentRuntimes"
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw",
+      "kind": "mcp_server",
+      "name": "lending-tools-gw",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw",
+      "attributes": {
+        "service": "AgentCore Gateway",
+        "protocol": "MCP",
+        "endpoint": "https://lending-tools-gw.gateway.bedrock-agentcore.ap-southeast-2.amazonaws.com/mcp",
+        "auth": "NONE",
+        "waf": false,
+        "status": "READY",
+        "discoveredVia": "bedrock-agentcore:ListGateways"
+      },
+      "tags": {}
+    },
+    {
+      "id": "external:mcp.bureau.example.com.au",
+      "kind": "mcp_server",
+      "name": "mcp.bureau.example.com.au",
+      "platform": "aws",
+      "region": null,
+      "arn": null,
+      "attributes": {
+        "service": "External endpoint",
+        "endpoint": "https://mcp.bureau.example.com.au/v2",
+        "publisher": "Third party (unverified)"
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:ecs:ap-southeast-2:482177301956:task-definition/ollama-sandbox:3/container/ollama",
+      "kind": "model",
+      "name": "Ollama (ollama-sandbox)",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": "arn:aws:ecs:ap-southeast-2:482177301956:task-definition/ollama-sandbox:3",
+      "attributes": {
+        "service": "ECS task definition",
+        "type": "Open-weight (self-hosted)",
+        "openWeight": true,
+        "server": "Ollama",
+        "image": "ollama/ollama:0.3.12",
+        "taskFamily": "ollama-sandbox"
+      },
+      "tags": {}
+    },
+    {
+      "id": "aws:bedrock-model:amazon.titan-embed-text-v2:0",
+      "kind": "model",
+      "name": "amazon.titan-embed-text-v2:0",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": null,
+      "attributes": {
+        "service": "Amazon Bedrock",
+        "provider": "amazon",
+        "type": "Foundation model (Bedrock)",
+        "openWeight": false
+      },
+      "tags": {}
+    },
+    {
+      "id": "aws:bedrock-model:anthropic.claude-sonnet-4-5-v1:0",
+      "kind": "model",
+      "name": "anthropic.claude-sonnet-4-5-v1:0",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": null,
+      "attributes": {
+        "service": "Amazon Bedrock",
+        "provider": "anthropic",
+        "type": "Foundation model (Bedrock)",
+        "inferenceProfile": "apac",
+        "openWeight": false,
+        "invocations": 1
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock:ap-southeast-2:482177301956:imported-model/llama31-8b-poc",
+      "kind": "model",
+      "name": "llama31-8b-poc",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": "arn:aws:bedrock:ap-southeast-2:482177301956:imported-model/llama31-8b-poc",
+      "attributes": {
+        "service": "Bedrock Custom Model Import",
+        "type": "Open-weight (imported weights)",
+        "openWeight": true,
+        "architecture": "llama3",
+        "family": "Llama"
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:sagemaker:ap-southeast-2:482177301956:endpoint/llama31-8b-loan-poc/model/meta-llama/Llama-3.1-8B-Instruct",
+      "kind": "model",
+      "name": "meta-llama/Llama-3.1-8B-Instruct",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": "arn:aws:sagemaker:ap-southeast-2:482177301956:endpoint/llama31-8b-loan-poc",
+      "attributes": {
+        "service": "SageMaker endpoint",
+        "endpoint": "llama31-8b-loan-poc",
+        "type": "Open-weight (self-hosted)",
+        "openWeight": true,
+        "server": "vLLM",
+        "image": "763104351884.dkr.ecr.ap-southeast-2.amazonaws.com/vllm:0.6.3-gpu",
+        "modelId": "meta-llama/Llama-3.1-8B-Instruct",
+        "family": "Llama",
+        "source": "Hugging Face",
+        "invocations": 1904,
+        "discoveredVia": "sagemaker:ListEndpoints"
+      },
+      "tags": {}
+    },
+    {
+      "id": "aws:bedrock-model:meta.llama3-1-70b-instruct-v1:0",
+      "kind": "model",
+      "name": "meta.llama3-1-70b-instruct-v1:0",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": null,
+      "attributes": {
+        "service": "Amazon Bedrock",
+        "provider": "meta",
+        "type": "Open-weight (Bedrock serverless)",
+        "family": "Llama",
+        "openWeight": true,
+        "invocations": 2
+      },
+      "tags": {}
+    },
+    {
+      "id": "aws:principal:HomeLoanAgentRole",
+      "kind": "principal",
+      "name": "HomeLoanAgentRole",
+      "platform": "aws",
+      "region": null,
+      "arn": "arn:aws:sts::482177301956:assumed-role/HomeLoanAgentRole/session-1",
+      "attributes": {
+        "calls": 1,
+        "firstSeen": "2026-10-20 09:01:00+00:00",
+        "lastSeen": "2026-10-20 09:01:00+00:00",
+        "regions": [
+          "ap-southeast-2"
+        ],
+        "days": 30
+      },
+      "tags": {}
+    },
+    {
+      "id": "aws:principal:lending-ds-sandbox",
+      "kind": "principal",
+      "name": "lending-ds-sandbox",
+      "platform": "aws",
+      "region": null,
+      "arn": "arn:aws:sts::482177301956:assumed-role/lending-ds-sandbox/session-2",
+      "attributes": {
+        "calls": 2,
+        "firstSeen": "2026-10-20 09:02:00+00:00",
+        "lastSeen": "2026-10-20 09:03:00+00:00",
+        "regions": [
+          "ap-southeast-2"
+        ],
+        "frameworks": [
+          "langchain"
+        ],
+        "days": 30
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:registry/reg1/record/r1",
+      "kind": "registry_record",
+      "name": "core-lending-mcp",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:registry/reg1/record/r1",
+      "attributes": {
+        "service": "AgentCore Registry",
+        "registry": "lending-registry",
+        "descriptorType": "MCP",
+        "approval": "APPROVED"
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q/action-group/AG2",
+      "kind": "tool",
+      "name": "calc",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": null,
+      "attributes": {
+        "service": "Bedrock action group",
+        "executor": "Built-in AMAZON.CodeInterpreter",
+        "builtIn": "AMAZON.CodeInterpreter"
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw/target/T3",
+      "kind": "tool",
+      "name": "core-lending",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": null,
+      "attributes": {
+        "service": "AgentCore Gateway target",
+        "targetType": "AgentCore runtime"
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q/action-group/AG1",
+      "kind": "tool",
+      "name": "credit-bureau",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": null,
+      "attributes": {
+        "service": "Bedrock action group",
+        "state": "ENABLED",
+        "executor": "Lambda",
+        "lambdaArn": "arn:aws:lambda:ap-southeast-2:482177301956:function:credit-bureau",
+        "functions": [
+          "bureau_enquiry",
+          "credit_score"
+        ]
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw/target/T1",
+      "kind": "tool",
+      "name": "credit-bureau",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": null,
+      "attributes": {
+        "service": "AgentCore Gateway target",
+        "targetType": "Remote MCP server",
+        "endpoint": "https://mcp.bureau.example.com.au/v2",
+        "outboundAuth": [
+          "API_KEY"
+        ]
+      },
+      "tags": {}
+    },
+    {
+      "id": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw/target/T2",
+      "kind": "tool",
+      "name": "serviceability",
+      "platform": "aws",
+      "region": "ap-southeast-2",
+      "arn": null,
+      "attributes": {
+        "service": "AgentCore Gateway target",
+        "targetType": "Lambda",
+        "lambdaArn": "arn:aws:lambda:ap-southeast-2:482177301956:function:serviceability"
+      },
+      "tags": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q",
+      "target": "aws:bedrock-model:anthropic.claude-sonnet-4-5-v1:0",
+      "type": "uses_model"
+    },
+    {
+      "source": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q",
+      "target": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q/action-group/AG1",
+      "type": "calls"
+    },
+    {
+      "source": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q",
+      "target": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q/action-group/AG2",
+      "type": "calls"
+    },
+    {
+      "source": "arn:aws:bedrock:ap-southeast-2:482177301956:knowledge-base/KB1",
+      "target": "aws:bedrock-model:amazon.titan-embed-text-v2:0",
+      "type": "embeds_with"
+    },
+    {
+      "source": "arn:aws:bedrock:ap-southeast-2:482177301956:knowledge-base/KB1",
+      "target": "arn:aws:bedrock:ap-southeast-2:482177301956:knowledge-base/KB1/data-source/DS1",
+      "type": "indexes"
+    },
+    {
+      "source": "arn:aws:bedrock:ap-southeast-2:482177301956:knowledge-base/KB1",
+      "target": "arn:aws:bedrock:ap-southeast-2:482177301956:knowledge-base/KB1/data-source/DS2",
+      "type": "indexes"
+    },
+    {
+      "source": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q",
+      "target": "arn:aws:bedrock:ap-southeast-2:482177301956:knowledge-base/KB1",
+      "type": "reads"
+    },
+    {
+      "source": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q",
+      "target": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/DOCCHK01",
+      "type": "delegates_to"
+    },
+    {
+      "source": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/DOCCHK01",
+      "target": "aws:bedrock-model:anthropic.claude-sonnet-4-5-v1:0",
+      "type": "uses_model"
+    },
+    {
+      "source": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw",
+      "target": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw/target/T1",
+      "type": "exposes"
+    },
+    {
+      "source": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw/target/T1",
+      "target": "external:mcp.bureau.example.com.au",
+      "type": "proxies"
+    },
+    {
+      "source": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw",
+      "target": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw/target/T2",
+      "type": "exposes"
+    },
+    {
+      "source": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw",
+      "target": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw/target/T3",
+      "type": "exposes"
+    },
+    {
+      "source": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw/target/T3",
+      "target": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:runtime/rt-mcp",
+      "type": "routes_to"
+    },
+    {
+      "source": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/DOCCHK01",
+      "target": "arn:aws:bedrock:ap-southeast-2:482177301956:guardrail/gr-lending",
+      "type": "protected_by"
+    },
+    {
+      "source": "aws:principal:HomeLoanAgentRole",
+      "target": "aws:bedrock-model:anthropic.claude-sonnet-4-5-v1:0",
+      "type": "invokes"
+    },
+    {
+      "source": "aws:principal:HomeLoanAgentRole",
+      "target": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q",
+      "type": "identity_of"
+    },
+    {
+      "source": "aws:principal:lending-ds-sandbox",
+      "target": "aws:bedrock-model:meta.llama3-1-70b-instruct-v1:0",
+      "type": "invokes"
+    }
+  ],
+  "findings": [
+    {
+      "id": "MCP_NO_AUTH:arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw",
+      "rule": "MCP_NO_AUTH",
+      "severity": "critical",
+      "asset_id": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw",
+      "title": "MCP gateway accepts unauthenticated requests",
+      "detail": "Anyone who can reach https://lending-tools-gw.gateway.bedrock-agentcore.ap-southeast-2.amazonaws.com/mcp can list and call its tools.",
+      "evidence": {}
+    },
+    {
+      "id": "HIGH_POWER_TOOL:arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q/action-group/AG2",
+      "rule": "HIGH_POWER_TOOL",
+      "severity": "high",
+      "asset_id": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q/action-group/AG2",
+      "title": "Agent can use AMAZON.CodeInterpreter",
+      "detail": "Code execution or computer control lets the agent take open-ended actions. Confirm sandboxing and human approval.",
+      "evidence": {
+        "signature": "AMAZON.CodeInterpreter"
+      }
+    },
+    {
+      "id": "OPEN_WEIGHT_NO_OWNER:arn:aws:bedrock:ap-southeast-2:482177301956:imported-model/llama31-8b-poc",
+      "rule": "OPEN_WEIGHT_NO_OWNER",
+      "severity": "high",
+      "asset_id": "arn:aws:bedrock:ap-southeast-2:482177301956:imported-model/llama31-8b-poc",
+      "title": "Open-weight model with no owner: llama31-8b-poc",
+      "detail": "Running on Bedrock Custom Model Import with no owner tag. Likely shadow AI: find the owner, confirm the data it processes and register it or shut it down.",
+      "evidence": {}
+    },
+    {
+      "id": "OPEN_WEIGHT_NO_OWNER:arn:aws:sagemaker:ap-southeast-2:482177301956:endpoint/llama31-8b-loan-poc/model/meta-llama/Llama-3.1-8B-Instruct",
+      "rule": "OPEN_WEIGHT_NO_OWNER",
+      "severity": "high",
+      "asset_id": "arn:aws:sagemaker:ap-southeast-2:482177301956:endpoint/llama31-8b-loan-poc/model/meta-llama/Llama-3.1-8B-Instruct",
+      "title": "Open-weight model with no owner: meta-llama/Llama-3.1-8B-Instruct",
+      "detail": "Running on SageMaker endpoint llama31-8b-loan-poc with no owner tag. Likely shadow AI: find the owner, confirm the data it processes and register it or shut it down.",
+      "evidence": {}
+    },
+    {
+      "id": "OPEN_WEIGHT_NO_OWNER:arn:aws:ecs:ap-southeast-2:482177301956:task-definition/ollama-sandbox:3/container/ollama",
+      "rule": "OPEN_WEIGHT_NO_OWNER",
+      "severity": "high",
+      "asset_id": "arn:aws:ecs:ap-southeast-2:482177301956:task-definition/ollama-sandbox:3/container/ollama",
+      "title": "Open-weight model with no owner: ollama-sandbox",
+      "detail": "Running on ECS task ollama-sandbox with no owner tag. Likely shadow AI: find the owner, confirm the data it processes and register it or shut it down.",
+      "evidence": {}
+    },
+    {
+      "id": "SECRET_IN_ENV:arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:runtime/rt-a2a",
+      "rule": "SECRET_IN_ENV",
+      "severity": "high",
+      "asset_id": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:runtime/rt-a2a",
+      "title": "Credentials passed as environment variables",
+      "detail": "Variables BROKER_API_KEY look like secrets. Move them to AgentCore Identity or Secrets Manager.",
+      "evidence": {
+        "variables": [
+          "BROKER_API_KEY"
+        ]
+      }
+    },
+    {
+      "id": "AGENT_NO_GUARDRAIL:arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q",
+      "rule": "AGENT_NO_GUARDRAIL",
+      "severity": "medium",
+      "asset_id": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/HLPA7K2Q",
+      "title": "Agent has no Bedrock guardrail",
+      "detail": "home-loan-preassess runs without a guardrail for harmful content, PII or prompt attacks.",
+      "evidence": {}
+    },
+    {
+      "id": "CROSS_REGION_INFERENCE:aws:bedrock-model:anthropic.claude-sonnet-4-5-v1:0",
+      "rule": "CROSS_REGION_INFERENCE",
+      "severity": "medium",
+      "asset_id": "aws:bedrock-model:anthropic.claude-sonnet-4-5-v1:0",
+      "title": "Cross-region inference profile 'apac'",
+      "detail": "Requests to anthropic.claude-sonnet-4-5-v1:0 may be processed outside the calling region. Check data residency obligations.",
+      "evidence": {
+        "profile": "apac"
+      }
+    },
+    {
+      "id": "EXTERNAL_ENDPOINT:arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw/target/T1",
+      "rule": "EXTERNAL_ENDPOINT",
+      "severity": "medium",
+      "asset_id": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw/target/T1",
+      "title": "Gateway target calls an external service (mcp.bureau.example.com.au)",
+      "detail": "Data leaves AWS for a service outside your account. Verify the publisher, contract and data handling.",
+      "evidence": {
+        "endpoint": "https://mcp.bureau.example.com.au/v2"
+      }
+    },
+    {
+      "id": "UNATTRIBUTED_MODEL_USE:aws:principal:lending-ds-sandbox",
+      "rule": "UNATTRIBUTED_MODEL_USE",
+      "severity": "medium",
+      "asset_id": "aws:principal:lending-ds-sandbox",
+      "title": "2 model calls not linked to any registered agent",
+      "detail": "lending-ds-sandbox called meta.llama3-1-70b-instruct-v1:0 in the last 30 days but is not the identity of any agent Nexus knows about. This is how shadow AI usually shows up.",
+      "evidence": {
+        "calls": 2,
+        "frameworks": [
+          "langchain"
+        ]
+      }
+    },
+    {
+      "id": "WEB_CRAWL_SOURCE:arn:aws:bedrock:ap-southeast-2:482177301956:knowledge-base/KB1/data-source/DS2",
+      "rule": "WEB_CRAWL_SOURCE",
+      "severity": "medium",
+      "asset_id": "arn:aws:bedrock:ap-southeast-2:482177301956:knowledge-base/KB1/data-source/DS2",
+      "title": "Knowledge base indexes public web pages",
+      "detail": "Crawled web content is untrusted input and a common route for indirect prompt injection.",
+      "evidence": {}
+    },
+    {
+      "id": "MCP_NO_POLICY:arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw",
+      "rule": "MCP_NO_POLICY",
+      "severity": "low",
+      "asset_id": "arn:aws:bedrock-agentcore:ap-southeast-2:482177301956:gateway/lending-tools-gw",
+      "title": "No policy engine on MCP gateway",
+      "detail": "Tool calls are not checked against a Cedar policy before they run.",
+      "evidence": {}
+    },
+    {
+      "id": "NO_OWNER:arn:aws:bedrock:ap-southeast-2:482177301956:agent/DOCCHK01",
+      "rule": "NO_OWNER",
+      "severity": "low",
+      "asset_id": "arn:aws:bedrock:ap-southeast-2:482177301956:agent/DOCCHK01",
+      "title": "Agent has no owner tag",
+      "detail": "Tag broker-doc-check with an owner so someone is accountable for it.",
+      "evidence": {}
+    }
+  ],
+  "errors": []
+}
