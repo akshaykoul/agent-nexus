@@ -1,0 +1,40 @@
+<title>Agent Nexus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@500;600;700&display=swap">
+<style>
+/*__CSS__*/
+</style>
+<div class="app">
+  <aside class="side" aria-label="Main navigation">
+    <a class="brand" href="#tower" aria-label="Agent Nexus home">
+      <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="1.8" fill="none"><circle cx="16" cy="16" r="11" opacity=".45"/><path d="M16 5v6M16 21v6M5 16h6M21 16h6"/></g><g fill="currentColor"><circle cx="16" cy="5" r="2.2"/><circle cx="27" cy="16" r="2.2"/><circle cx="16" cy="27" r="2.2"/><circle cx="5" cy="16" r="2.2"/></g></svg>
+      <span><b>Agent Nexus</b><small>AI audit &amp; governance</small></span>
+    </a>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      <div class="tenant"><span class="dot ok"></span><span><b>Harbourline Bank</b><small>Sydney · AU tenant</small></span></div>
+      <button class="link-btn" id="resetDemo" type="button">Reset demo</button>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <div class="search"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2"/></svg><input id="globalSearch" type="search" placeholder="Search agents, tools, MCP servers, models…" autocomplete="off"><div class="search-results" id="searchResults" hidden></div></div>
+      <div class="top-right">
+        <span class="env-pill">Live · 29 Oct 2026</span>
+        <div class="me"><span class="avatar">MC</span><span class="me-txt"><b>Mei Lin Chen</b><small>Head of AI Risk</small></span></div>
+      </div>
+    </header>
+    <main id="view" tabindex="-1"></main>
+  </div>
+</div>
+<div class="drawer-scrim" id="scrim" hidden></div>
+<section class="drawer" id="drawer" hidden aria-modal="true" role="dialog"></section>
+<div class="toast" id="toast" role="status" hidden></div>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+<script>
+/*__DATA__*/
+</script>
+<script>
+/*__APP__*/
+</script>

@@ -1,0 +1,1707 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agent Nexus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@500;600;700&display=swap">
+<style>
+/* Layout: fixed left rail + scrolling work area; dense, scan-first panels. */
+:root {
+  --bg: #F3F5F7;
+  --surface: #FFFFFF;
+  --surface-2: #EDF1F4;
+  --ink: #111B27;
+  --ink-2: #44525F;
+  --muted: #74818E;
+  --line: #D9E0E6;
+  --rail: #0F1D2A;
+  --rail-ink: #C9D5DF;
+  --rail-hi: #FFFFFF;
+  --accent: #0A7A73;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DCEFEC;
+  --ok: #1F8A57;   --ok-soft: #DDF1E6;
+  --warn: #B26B00; --warn-soft: #FBEBD0;
+  --crit: #C2362D; --crit-soft: #F9DEDB;
+  --info: #2E66C7; --info-soft: #DFE8F8;
+  --shadow: 0 1px 2px rgba(17,27,39,.06), 0 4px 16px rgba(17,27,39,.05);
+  --f-display: 'Sora', 'Segoe UI', system-ui, sans-serif;
+  --f-body: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0D141C; --surface: #141D27; --surface-2: #1B2632; --ink: #E5ECF2; --ink-2: #A9B6C2; --muted: #7D8B98; --line: #283543;
+  --rail: #09111A; --rail-ink: #A9B8C5; --rail-hi: #FFFFFF; --accent: #2DB3A8; --accent-ink: #062320; --accent-soft: #123B38;
+  --ok: #4CC08A; --ok-soft: #12392A; --warn: #E3A440; --warn-soft: #3D2C10; --crit: #F0756B; --crit-soft: #42201D; --info: #74A3F2; --info-soft: #1A2B47;
+  --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0D141C; --surface: #141D27; --surface-2: #1B2632; --ink: #E5ECF2; --ink-2: #A9B6C2; --muted: #7D8B98; --line: #283543;
+  --rail: #09111A; --rail-ink: #A9B8C5; --rail-hi: #FFFFFF; --accent: #2DB3A8; --accent-ink: #062320; --accent-soft: #123B38;
+  --ok: #4CC08A; --ok-soft: #12392A; --warn: #E3A440; --warn-soft: #3D2C10; --crit: #F0756B; --crit-soft: #42201D; --info: #74A3F2; --info-soft: #1A2B47;
+  --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--f-body); -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono { font-family: var(--f-mono); font-size: 12.5px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: 12.5px; }
+
+.app { display: grid; grid-template-columns: 236px minmax(0, 1fr); height: 100%; }
+.side { background: var(--rail); color: var(--rail-ink); display: flex; flex-direction: column; padding: 18px 12px; gap: 18px; overflow-y: auto; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--rail-hi); text-decoration: none; padding: 4px 8px; }
+.brand svg { color: #4FD1C5; flex: none; }
+.brand b { font-family: var(--f-display); font-size: 16px; letter-spacing: -.01em; display: block; }
+.brand small { display: block; font-size: 11px; color: var(--rail-ink); opacity: .8; }
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav a { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; color: var(--rail-ink); text-decoration: none; font-weight: 500; }
+.nav a svg { width: 18px; height: 18px; flex: none; opacity: .85; }
+.nav a:hover { background: rgba(255,255,255,.06); color: var(--rail-hi); }
+.nav a.on { background: rgba(79,209,197,.14); color: var(--rail-hi); }
+.nav a.on svg { color: #4FD1C5; opacity: 1; }
+.nav .badge { margin-left: auto; font-size: 11px; background: #E2574C; color: #fff; padding: 1px 7px; border-radius: 99px; font-variant-numeric: tabular-nums; }
+.nav .badge.soft { background: rgba(255,255,255,.12); color: var(--rail-ink); }
+.nav-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; padding: 10px 10px 4px; opacity: .55; }
+.side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 0 8px; }
+.tenant { display: flex; gap: 10px; align-items: center; }
+.tenant b { display: block; color: var(--rail-hi); font-weight: 500; font-size: 13px; }
+.tenant small { font-size: 11.5px; opacity: .75; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--rail-ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: 12px; text-align: left; opacity: .8; }
+
+.main { display: flex; flex-direction: column; min-width: 0; height: 100%; overflow: hidden; }
+.top { display: flex; align-items: center; gap: 16px; padding: 12px max(16px, env(safe-area-inset-right, 0px)) 12px 24px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.search { position: relative; flex: 1; max-width: 520px; display: flex; align-items: center; gap: 8px; background: var(--surface-2); border-radius: 8px; padding: 0 10px; color: var(--muted); }
+.search input { border: 0; background: transparent; padding: 9px 0; width: 100%; outline: none; color: var(--ink); }
+.search-results { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); z-index: 30; max-height: 360px; overflow: auto; padding: 6px; }
+.search-results button { display: flex; width: 100%; gap: 10px; align-items: center; text-align: left; border: 0; background: none; padding: 8px; border-radius: 6px; cursor: pointer; color: var(--ink); }
+.search-results button:hover { background: var(--surface-2); }
+.top-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+.env-pill { font-size: 12px; color: var(--ok); background: var(--ok-soft); padding: 4px 10px; border-radius: 99px; white-space: nowrap; }
+.me { display: flex; align-items: center; gap: 10px; }
+.me b { display: block; font-size: 13px; font-weight: 500; }
+.me small { display: block; font-size: 11.5px; color: var(--muted); }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 600; font-size: 12px; flex: none; }
+#view { flex: 1; overflow-y: auto; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 48px 24px; outline: none; }
+
+/* Page header */
+.ph { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 24px; margin-bottom: 20px; }
+.ph h1 { font-family: var(--f-display); font-size: 24px; font-weight: 600; letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+.ph p { margin: 4px 0 0; color: var(--ink-2); max-width: 70ch; }
+.ph .actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.crumbs { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.crumbs a { color: var(--muted); text-decoration: none; }
+.crumbs a:hover { color: var(--accent); }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 8px 14px; border-radius: 8px; font-weight: 500; cursor: pointer; white-space: nowrap; text-decoration: none; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.danger { color: var(--crit); border-color: color-mix(in srgb, var(--crit) 40%, var(--line)); }
+.btn.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, var(--line)); }
+.btn.sm { padding: 5px 10px; font-size: 12.5px; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.btn svg { width: 16px; height: 16px; }
+
+/* Panels */
+.grid { display: grid; gap: 16px; }
+.g-kpi { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.g-2 { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+.g-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 18px; min-width: 0; }
+.panel h2 { font-size: 13px; font-weight: 600; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+.panel h2 .muted { font-weight: 400; }
+.panel h2 a, .panel h2 .right { margin-left: auto; font-weight: 500; font-size: 12.5px; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; cursor: pointer; text-align: left; }
+.kpi:hover { border-color: var(--accent); }
+.kpi .lbl { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.kpi .val { font-family: var(--f-display); font-size: 28px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.kpi .sub { font-size: 12.5px; color: var(--ink-2); }
+.kpi.alert .val { color: var(--crit); }
+.kpi.warnk .val { color: var(--warn); }
+
+/* Banner */
+.banner { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: var(--r); padding: 14px 18px; margin-bottom: 16px; }
+.banner b { display: block; }
+.banner .btn { margin-left: auto; }
+
+/* Chips and pills */
+.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 500; padding: 2px 8px; border-radius: 99px; background: var(--surface-2); color: var(--ink-2); white-space: nowrap; line-height: 1.6; }
+.chip.ok { background: var(--ok-soft); color: var(--ok); }
+.chip.warn { background: var(--warn-soft); color: var(--warn); }
+.chip.crit { background: var(--crit-soft); color: var(--crit); }
+.chip.info { background: var(--info-soft); color: var(--info); }
+.chip.acc { background: var(--accent-soft); color: var(--accent); }
+.chip svg { width: 12px; height: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; background: var(--muted); }
+.dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); } .dot.crit { background: var(--crit); } .dot.info { background: var(--info); }
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; white-space: nowrap; }
+
+/* Platform monogram tile */
+.pt { width: 30px; height: 30px; border-radius: 7px; display: grid; place-items: center; font: 600 10px/1 var(--f-mono); letter-spacing: .02em; color: #fff; flex: none; position: relative; overflow: hidden; }
+.pt::after { content: ""; position: absolute; inset: auto -6px -10px auto; width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,.18); }
+.pt.lg { width: 44px; height: 44px; border-radius: 10px; font-size: 12px; }
+.pt.sm { width: 22px; height: 22px; border-radius: 5px; font-size: 8px; }
+
+/* Tables */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--surface); white-space: nowrap; }
+td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+tbody tr.click { cursor: pointer; }
+tbody tr.click:hover td { background: var(--surface-2); }
+tr.flash td { animation: flash 2.2s ease-out; }
+@keyframes flash { from { background: var(--accent-soft); } to { background: transparent; } }
+.cell-name { display: flex; align-items: center; gap: 10px; min-width: 220px; }
+.cell-name b { font-weight: 500; display: block; }
+.cell-name small { color: var(--muted); font-size: 12px; display: block; }
+
+/* Score */
+.score { display: inline-flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; font-weight: 600; }
+.score .bar { width: 54px; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.score .bar i { display: block; height: 100%; border-radius: 3px; }
+.ring { position: relative; width: 84px; height: 84px; flex: none; }
+.ring svg { transform: rotate(-90deg); }
+.ring .v { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--f-display); font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1; }
+.ring .v small { display: block; font: 500 9.5px var(--f-body); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 4px; }
+
+/* Bars chart */
+.hbars { display: flex; flex-direction: column; gap: 9px; }
+.hbar { display: grid; grid-template-columns: 150px minmax(0, 1fr) 44px; gap: 10px; align-items: center; font-size: 12.5px; }
+.hbar .lab { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.hbar .lab span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hbar .track { height: 10px; background: var(--surface-2); border-radius: 5px; overflow: hidden; display: flex; }
+.hbar .track i { height: 100%; display: block; transition: width .6s ease; }
+.hbar .n { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); margin-top: 12px; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+/* Heat matrix */
+.heat { display: grid; grid-template-columns: 74px repeat(5, minmax(0, 1fr)); gap: 4px; font-size: 12px; }
+.heat .h { color: var(--muted); font-size: 11px; text-align: center; padding: 2px 0 4px; line-height: 1.25; }
+.heat .r { color: var(--ink-2); display: flex; align-items: center; font-weight: 500; }
+.heat .c { border-radius: 6px; height: 40px; display: grid; place-items: center; font-weight: 600; font-variant-numeric: tabular-nums; background: var(--surface-2); color: var(--ink-2); cursor: pointer; border: 0; }
+.heat .c.z { color: var(--muted); font-weight: 400; cursor: default; }
+
+/* Lists */
+.list { display: flex; flex-direction: column; }
+.li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--line); text-decoration: none; color: inherit; }
+.li:last-child { border-bottom: 0; }
+a.li:hover b, button.li:hover b { color: var(--accent); }
+button.li { background: none; border: 0; border-bottom: 1px solid var(--line); text-align: left; cursor: pointer; width: 100%; }
+.li .grow { flex: 1; min-width: 0; }
+.li b { font-weight: 500; display: block; }
+.li small { color: var(--muted); font-size: 12px; display: block; }
+.sev { width: 4px; align-self: stretch; border-radius: 2px; flex: none; background: var(--muted); }
+.sev.crit { background: var(--crit); } .sev.warn { background: var(--warn); } .sev.info { background: var(--info); } .sev.ok { background: var(--ok); }
+
+/* Tabs */
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin-bottom: 16px; overflow-x: auto; }
+.tabs button { background: none; border: 0; padding: 10px 14px; cursor: pointer; color: var(--ink-2); font-weight: 500; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; display: flex; gap: 6px; align-items: center; }
+.tabs button.on { color: var(--accent); border-bottom-color: var(--accent); }
+.tabs button .chip { font-size: 11px; }
+
+/* Filters */
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.filters select, .filters input[type=search] { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 10px; font-size: 13px; }
+.filters input[type=search] { min-width: 220px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { white-space: nowrap; border: 0; background: none; padding: 7px 12px; cursor: pointer; font-size: 13px; color: var(--ink-2); }
+.seg button.on { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+
+/* Connector cards */
+.conns { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.conn { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 10px; text-align: left; cursor: pointer; }
+.conn:hover { border-color: var(--accent); }
+.conn.new { border-style: dashed; border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface)); }
+.conn .head { display: flex; gap: 10px; align-items: center; }
+.conn b { font-weight: 500; display: block; line-height: 1.3; }
+.conn small { color: var(--muted); font-size: 12px; display: block; }
+.conn .meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-2); align-items: center; gap: 8px; }
+
+/* Platform picker */
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.pgrid button { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); cursor: pointer; text-align: left; position: relative; }
+.pgrid button:hover { border-color: var(--accent); }
+.pgrid button.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.pgrid button b { font-weight: 500; font-size: 13px; line-height: 1.3; }
+.pgrid button small { color: var(--muted); font-size: 11.5px; }
+.pgrid .tag { position: absolute; top: 10px; right: 10px; }
+
+/* Drawer */
+.drawer-scrim { position: fixed; inset: 0; background: rgba(9,17,26,.45); z-index: 40; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(760px, 100%); background: var(--bg); z-index: 41; display: flex; flex-direction: column; box-shadow: -8px 0 32px rgba(0,0,0,.18); animation: slide .22s ease-out; }
+@keyframes slide { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.drawer header { display: flex; align-items: center; gap: 12px; padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 16px 22px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.drawer header h2 { margin: 0; font-family: var(--f-display); font-size: 18px; font-weight: 600; }
+.drawer header .x { margin-left: auto; }
+.drawer .body { flex: 1; overflow-y: auto; padding: 20px max(16px, env(safe-area-inset-right, 0px)) 20px 22px; }
+.drawer footer { padding: 14px max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) 22px; background: var(--surface); border-top: 1px solid var(--line); display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.steps { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+.steps span { font-size: 12px; padding: 4px 10px; border-radius: 99px; background: var(--surface-2); color: var(--muted); }
+.steps span.on { background: var(--accent); color: var(--accent-ink); }
+.steps span.done { background: var(--accent-soft); color: var(--accent); }
+
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.field label { font-size: 12.5px; font-weight: 500; color: var(--ink-2); }
+.field input, .field select, .field textarea { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 9px 11px; width: 100%; }
+.field textarea { min-height: 84px; resize: vertical; }
+.field .hint { font-size: 12px; color: var(--muted); }
+.checks { display: flex; flex-direction: column; gap: 8px; }
+.check { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); cursor: pointer; }
+.check input { margin-top: 3px; accent-color: var(--accent); }
+.check b { font-weight: 500; display: block; }
+.check small { color: var(--muted); font-size: 12px; }
+
+/* Scan console */
+.console { background: #0B141D; color: #C6D3DE; border-radius: 10px; padding: 14px 16px; font: 12.5px/1.65 var(--f-mono); height: 340px; overflow-y: auto; }
+.console .ln { display: flex; gap: 10px; animation: fadein .25s ease-out; }
+.console .ln .t { color: #5C7183; flex: none; }
+.console .ln.step { color: #FFFFFF; font-weight: 500; margin-top: 6px; }
+.console .ln.found { color: #6FE0C8; }
+.console .ln.warn { color: #F3B65B; }
+.console .ln.done { color: #8EE59F; font-weight: 500; }
+@keyframes fadein { from { opacity: 0; transform: translateY(3px); } }
+.progress { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin: 14px 0 6px; }
+.progress i { display: block; height: 100%; background: var(--accent); transition: width .3s ease; }
+.scan-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.scan-stats div { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.scan-stats b { font-family: var(--f-display); font-size: 22px; font-weight: 600; display: block; font-variant-numeric: tabular-nums; }
+.scan-stats small { color: var(--muted); font-size: 11.5px; }
+
+/* Agent detail */
+.agent-head { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+.agent-head h1 { font-family: var(--f-display); font-size: 24px; font-weight: 600; margin: 0; letter-spacing: -.02em; }
+.agent-head .grow { flex: 1; min-width: 240px; }
+.agent-head p { margin: 4px 0 8px; color: var(--ink-2); max-width: 75ch; }
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; margin-bottom: 16px; }
+.facts div { background: var(--surface); padding: 10px 14px; min-width: 0; }
+.facts small { display: block; color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; }
+.facts b { font-weight: 500; font-size: 13.5px; display: block; overflow-wrap: anywhere; }
+
+.graph-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; }
+.graph { position: relative; height: 560px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden;
+  background-image: radial-gradient(circle, var(--line) 1px, transparent 1px); background-size: 22px 22px; }
+#cy { position: absolute; inset: 0; }
+.graph-tools { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; z-index: 2; flex-wrap: wrap; }
+.graph-legend { position: absolute; bottom: 10px; left: 10px; z-index: 2; display: flex; gap: 10px; flex-wrap: wrap; background: color-mix(in srgb, var(--surface) 92%, transparent); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: 11.5px; color: var(--ink-2); }
+.graph-legend span { display: inline-flex; gap: 5px; align-items: center; }
+.graph-legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.graph-hint { position: absolute; top: 12px; right: 12px; z-index: 2; font-size: 12px; color: var(--muted); background: color-mix(in srgb, var(--surface) 92%, transparent); padding: 4px 10px; border-radius: 99px; border: 1px solid var(--line); }
+.inspector { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; height: 560px; overflow-y: auto; }
+.inspector h3 { margin: 4px 0 2px; font-size: 16px; font-weight: 600; font-family: var(--f-display); }
+.inspector .type { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.kv { display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 6px 10px; font-size: 13px; margin: 14px 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+.lineage { border-left: 2px solid var(--line); margin: 8px 0 0 6px; padding-left: 14px; display: flex; flex-direction: column; gap: 10px; }
+.lineage div { position: relative; font-size: 13px; }
+.lineage div::before { content: ""; position: absolute; left: -20px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); }
+.lineage small { display: block; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+
+.dims { display: flex; flex-direction: column; gap: 12px; }
+.dim { display: grid; grid-template-columns: 160px minmax(0, 1fr) 40px; gap: 12px; align-items: center; }
+.dim .track { height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.dim .track i { display: block; height: 100%; border-radius: 4px; }
+
+/* Review workbench */
+.wb { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 16px; align-items: start; }
+.queue { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.queue button { display: flex; gap: 10px; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--line); background: none; padding: 12px 14px; cursor: pointer; align-items: flex-start; }
+.queue button:last-child { border-bottom: 0; }
+.queue button.on { background: var(--accent-soft); }
+.queue button:hover:not(.on) { background: var(--surface-2); }
+.queue b { font-weight: 500; display: block; }
+.queue small { color: var(--muted); font-size: 12px; display: block; }
+.queue .grow { flex: 1; min-width: 0; }
+.qhead { padding: 12px 14px; border-bottom: 1px solid var(--line); display: flex; gap: 6px; flex-wrap: wrap; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.form-grid > div { background: var(--surface); padding: 11px 14px; min-width: 0; }
+.form-grid small { display: block; color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
+.form-grid .full { grid-column: 1 / -1; }
+.gr { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.gr span { font-size: 11.5px; padding: 7px 8px; border-radius: 6px; display: flex; gap: 6px; align-items: flex-start; line-height: 1.3; }
+.gr span.y { background: var(--ok-soft); color: var(--ok); }
+.gr span.n { background: var(--crit-soft); color: var(--crit); }
+.evals { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.evals div { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--surface); }
+.evals b { font-family: var(--f-display); font-size: 20px; display: block; font-variant-numeric: tabular-nums; font-weight: 600; }
+.evals small { color: var(--muted); font-size: 11.5px; }
+.decision { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow); }
+.decision textarea { border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; min-height: 64px; background: var(--surface); resize: vertical; width: 100%; }
+.note { border-left: 3px solid var(--info); background: var(--info-soft); padding: 8px 12px; border-radius: 0 8px 8px 0; font-size: 13px; }
+
+/* Incident */
+.timeline { display: flex; flex-direction: column; }
+.tl { display: grid; grid-template-columns: 128px 18px minmax(0, 1fr); gap: 0 10px; font-size: 13px; }
+.tl .when { color: var(--muted); font-family: var(--f-mono); font-size: 12px; padding-top: 1px; }
+.tl .rail { display: flex; flex-direction: column; align-items: center; }
+.tl .rail i { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--accent); background: var(--surface); margin-top: 4px; flex: none; }
+.tl .rail span { flex: 1; width: 2px; background: var(--line); min-height: 16px; }
+.tl .what { padding-bottom: 14px; }
+.prose p { margin: 0 0 10px; max-width: 75ch; }
+.prose h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 18px 0 6px; font-weight: 500; }
+.prose h3:first-child { margin-top: 0; }
+.precedent { background: var(--surface-2); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--ink-2); }
+
+.chain { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
+.verify { display: inline-flex; gap: 6px; align-items: center; color: var(--ok); font-size: 12.5px; font-weight: 500; }
+
+.toast { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 10px; z-index: 60; font-weight: 500; box-shadow: var(--shadow); max-width: calc(100% - 32px); animation: fadein .2s; }
+
+.empty { padding: 40px 20px; text-align: center; color: var(--muted); }
+
+@media (max-width: 1180px) {
+  .g-kpi { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .graph-wrap { grid-template-columns: 1fr; }
+  .inspector { height: auto; max-height: 520px; }
+  .gr { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 960px) {
+  .g-2, .g-3 { grid-template-columns: 1fr; }
+  .wb { grid-template-columns: 1fr; }
+  .evals, .scan-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 820px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
+  .side { flex-direction: row; padding: 10px max(16px, env(safe-area-inset-left, 0px)); gap: 12px; align-items: center; overflow-x: auto; overflow-y: hidden; }
+  .brand small, .side-foot, .nav-label { display: none; }
+  .nav { flex-direction: row; }
+  .nav a { padding: 7px 10px; white-space: nowrap; }
+  .top { padding-left: max(16px, env(safe-area-inset-left, 0px)); }
+  .me-txt, .env-pill { display: none; }
+  #view { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-top: 18px; }
+  .g-kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .form-grid { grid-template-columns: 1fr; }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hbar { grid-template-columns: 110px minmax(0, 1fr) 36px; }
+  .graph { height: 440px; }
+  .tl { grid-template-columns: 96px 18px minmax(0, 1fr); }
+  .dim { grid-template-columns: 120px minmax(0, 1fr) 36px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="side" aria-label="Main navigation">
+    <a class="brand" href="#tower" aria-label="Agent Nexus home">
+      <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="1.8" fill="none"><circle cx="16" cy="16" r="11" opacity=".45"/><path d="M16 5v6M16 21v6M5 16h6M21 16h6"/></g><g fill="currentColor"><circle cx="16" cy="5" r="2.2"/><circle cx="27" cy="16" r="2.2"/><circle cx="16" cy="27" r="2.2"/><circle cx="5" cy="16" r="2.2"/></g></svg>
+      <span><b>Agent Nexus</b><small>AI audit &amp; governance</small></span>
+    </a>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      <div class="tenant"><span class="dot ok"></span><span><b>Harbourline Bank</b><small>Sydney · AU tenant</small></span></div>
+      <button class="link-btn" id="resetDemo" type="button">Reset demo</button>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <div class="search"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2"/></svg><input id="globalSearch" type="search" placeholder="Search agents, tools, MCP servers, models…" autocomplete="off"><div class="search-results" id="searchResults" hidden></div></div>
+      <div class="top-right">
+        <span class="env-pill">Live · 29 Oct 2026</span>
+        <div class="me"><span class="avatar">MC</span><span class="me-txt"><b>Mei Lin Chen</b><small>Head of AI Risk</small></span></div>
+      </div>
+    </header>
+    <main id="view" tabindex="-1"></main>
+  </div>
+</div>
+<div class="drawer-scrim" id="scrim" hidden></div>
+<section class="drawer" id="drawer" hidden aria-modal="true" role="dialog"></section>
+<div class="toast" id="toast" role="status" hidden></div>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+<script>
+/* Agent Nexus demo data — Harbourline Bank (fictional Australian bank).
+   All organisations, people and figures are illustrative. */
+
+const ORG = { name: 'Harbourline Bank', hq: 'Sydney NSW', tenant: 'harbourline.agentnexus.ai' };
+const ME = { name: 'Mei Lin Chen', role: 'Head of AI Risk', initials: 'MC' };
+
+/* Platform tiles use neutral monograms, not vendor logos. */
+const PLATFORMS = {
+  bedrock:    { name: 'AWS Bedrock & AgentCore', short: 'AWS',  hue: '#D9822B', kind: 'Cloud AI' },
+  vertex:     { name: 'Google Vertex AI',        short: 'GCP',  hue: '#3B7DDD', kind: 'Cloud AI' },
+  azure:      { name: 'Azure AI Foundry',        short: 'AZ',   hue: '#2B88C9', kind: 'Cloud AI' },
+  agentforce: { name: 'Salesforce Agentforce',   short: 'SF',   hue: '#1C8FCF', kind: 'SaaS' },
+  servicenow: { name: 'ServiceNow AI Agents',    short: 'NOW',  hue: '#4E9A6B', kind: 'SaaS' },
+  copilot:    { name: 'Microsoft Copilot Studio',short: 'CS',   hue: '#7A5BC7', kind: 'SaaS' },
+  workday:    { name: 'Workday',                 short: 'WD',   hue: '#E0A325', kind: 'SaaS' },
+  sap:        { name: 'SAP Joule',               short: 'SAP',  hue: '#2C6FB5', kind: 'SaaS' },
+  databricks: { name: 'Databricks Mosaic AI',    short: 'DB',   hue: '#D2513A', kind: 'Data platform' },
+  snowflake:  { name: 'Snowflake Cortex',        short: 'SNW',  hue: '#2BA3C9', kind: 'Data platform' },
+  mulesoft:   { name: 'MuleSoft Agent Fabric',   short: 'MULE', hue: '#1B6FA8', kind: 'Integration' },
+  github:     { name: 'GitHub (repos & MCP)',    short: 'GH',   hue: '#5A6372', kind: 'Code' },
+  hf:         { name: 'Hugging Face Hub',        short: 'HF',   hue: '#D9A21B', kind: 'Open-weight' },
+  k8s:        { name: 'Self-hosted (vLLM / Ollama)', short: 'K8s', hue: '#3F68C9', kind: 'Open-weight' },
+  openai:     { name: 'OpenAI API',              short: 'OAI',  hue: '#3E8E7E', kind: 'Model API' },
+  anthropic:  { name: 'Anthropic API',           short: 'ANT',  hue: '#B5643C', kind: 'Model API' },
+  browser:    { name: 'Browser & endpoint DLP',  short: 'DLP',  hue: '#8A6D52', kind: 'Endpoint' },
+};
+
+/* Landscapes the bank has connected. aws-retail and gcp-wealth are the live demo scans. */
+const CONNECTORS = [
+  { id: 'sf-prod',    platform: 'agentforce', label: 'Harbourline Salesforce Org (prod)', status: 'connected', lastScan: '2026-10-29 06:00', scope: 'org 00D5g000004Hb', method: 'Agent API + A2A cards' },
+  { id: 'now-prod',   platform: 'servicenow', label: 'ServiceNow (harbourline.service-now.com)', status: 'connected', lastScan: '2026-10-29 06:00', scope: 'instance harbourline', method: 'AI Agent Studio API' },
+  { id: 'm365',       platform: 'copilot',    label: 'Microsoft 365 tenant', status: 'connected', lastScan: '2026-10-29 05:30', scope: 'tenant harbourline.onmicrosoft.com', method: 'Power Platform admin API' },
+  { id: 'dbx',        platform: 'databricks', label: 'Databricks (risk-analytics)', status: 'connected', lastScan: '2026-10-29 05:30', scope: 'workspace adb-7731', method: 'Unity Catalog + serving endpoints' },
+  { id: 'wd',         platform: 'workday',    label: 'Workday (HCM prod)', status: 'connected', lastScan: '2026-10-28 22:00', scope: 'tenant harbourline_prod', method: 'Vendor AI feature inventory' },
+  { id: 'aws-core',   platform: 'bedrock',    label: 'AWS · Core Banking (prod)', status: 'connected', lastScan: '2026-10-29 06:15', scope: 'account 3310 8842 1907 · ap-southeast-2', method: 'Bedrock + AgentCore APIs, CloudTrail' },
+  { id: 'aws-retail', platform: 'bedrock',    label: 'AWS · Retail Lending AI', status: 'new', scope: 'account 4821 7730 1956 · ap-southeast-2', method: '' },
+  { id: 'gcp-wealth', platform: 'vertex',     label: 'Google Cloud · Wealth & Cards', status: 'new', scope: 'project hlb-wealth-cards · australia-southeast1', method: '' },
+];
+
+const MODELS = {
+  'm-gpt41':      { name: 'GPT-4.1 via Einstein Trust Layer', provider: 'OpenAI (via Salesforce)', type: 'Proprietary', host: 'agentforce', region: 'Salesforce Hyperforce AU', tags: ['Approved', 'Zero data retention'] },
+  'm-nowllm':     { name: 'Now LLM', provider: 'ServiceNow', type: 'Proprietary', host: 'servicenow', region: 'ServiceNow AU data centre', tags: ['Approved'] },
+  'm-gpt4o':      { name: 'GPT-4o (Microsoft hosted)', provider: 'Microsoft', type: 'Proprietary', host: 'copilot', region: 'Microsoft AU East', tags: ['Approved', 'Zero data retention'] },
+  'm-llama70':    { name: 'Llama 3.3 70B Instruct', provider: 'Meta (open-weight)', type: 'Open-weight', host: 'databricks', region: 'Azure AU East', license: 'Llama 3.3 Community License', tags: ['Approved', 'Weights hash verified'] },
+  'm-illuminate': { name: 'Workday Illuminate', provider: 'Workday', type: 'Proprietary', host: 'workday', region: 'Workday AU', tags: ['Vendor attested'] },
+  'm-claude':     { name: 'Claude Sonnet 4.5', provider: 'Anthropic via Amazon Bedrock', type: 'Proprietary', host: 'bedrock', region: 'ap-southeast-2 (Sydney)', tags: ['Approved', 'Zero data retention'] },
+  'm-nova':       { name: 'Amazon Nova Pro', provider: 'Amazon', type: 'Proprietary', host: 'bedrock', region: 'ap-southeast-2 (Sydney)', tags: ['Approved'] },
+  'm-titan':      { name: 'Titan Text Embeddings V2', provider: 'Amazon', type: 'Proprietary', host: 'bedrock', region: 'ap-southeast-2 (Sydney)', tags: ['Approved'] },
+  'm-llama8':     { name: 'Llama 3.1 8B Instruct', provider: 'Meta (open-weight)', type: 'Open-weight', host: 'bedrock', region: 'SageMaker endpoint · ap-southeast-2', license: 'Llama 3.1 Community License', tags: ['Unregistered', 'Weights hash matched to HF'] },
+  'm-gemini-pro': { name: 'Gemini 2.5 Pro', provider: 'Google', type: 'Proprietary', host: 'vertex', region: 'australia-southeast1', tags: ['Approved'] },
+  'm-gemini-flash': { name: 'Gemini 2.5 Flash', provider: 'Google', type: 'Proprietary', host: 'vertex', region: 'australia-southeast1', tags: ['Approved'] },
+  'm-imagen':     { name: 'Imagen 3', provider: 'Google', type: 'Proprietary', host: 'vertex', region: 'us-central1', tags: ['Residency exception'] },
+  'm-gemma':      { name: 'Gemma 3 12B', provider: 'Google (open-weight)', type: 'Open-weight', host: 'vertex', region: 'GKE vLLM · australia-southeast1', license: 'Gemma Terms of Use', tags: ['Weights hash verified'] },
+};
+
+const MCP = {
+  'mcp-sfcrm':   { name: 'Salesforce CRM MCP', host: 'agentforce', publisher: 'Salesforce (vendor)', auth: 'OAuth 2.0, user-delegated', endpoint: 'mcp://harbourline.my.salesforce.com/crm', tags: ['Verified publisher', 'Approved'] },
+  'mcp-core':    { name: 'Core Banking MCP', host: 'mulesoft', publisher: 'Harbourline Platform Engineering', auth: 'mTLS + OAuth client credentials', endpoint: 'https://api.harbourline.com.au/mcp/core-banking', tags: ['Internal', 'Approved', 'Rate limited'] },
+  'mcp-now':     { name: 'ServiceNow MCP', host: 'servicenow', publisher: 'ServiceNow (vendor)', auth: 'OAuth 2.0', endpoint: 'mcp://harbourline.service-now.com', tags: ['Verified publisher', 'Approved'] },
+  'mcp-m365':    { name: 'Microsoft Graph MCP', host: 'copilot', publisher: 'Microsoft (vendor)', auth: 'Entra ID, delegated', endpoint: 'mcp://graph.microsoft.com', tags: ['Verified publisher', 'Approved'] },
+  'mcp-procure': { name: 'Procurement MCP', host: 'mulesoft', publisher: 'Harbourline Procurement Tech', auth: 'OAuth client credentials', endpoint: 'https://api.harbourline.com.au/mcp/procurement', tags: ['Internal', 'Approved'] },
+  'mcp-uc':      { name: 'Unity Catalog MCP', host: 'databricks', publisher: 'Databricks (vendor)', auth: 'Service principal', endpoint: 'mcp://adb-7731.azuredatabricks.net/uc', tags: ['Verified publisher', 'Approved'] },
+  'mcp-wd':      { name: 'Workday Recruiting MCP', host: 'workday', publisher: 'Workday (vendor)', auth: 'OAuth 2.0', endpoint: 'mcp://wd5.myworkday.com/harbourline', tags: ['Verified publisher'] },
+  'mcp-fincrime':{ name: 'Financial Crime Case MCP', host: 'bedrock', publisher: 'Harbourline FinCrime Engineering', auth: 'IAM SigV4', endpoint: 'arn:aws:lambda:ap-southeast-2:331088421907:function:fincrime-mcp', tags: ['Internal', 'Approved'] },
+  'mcp-txn':     { name: 'Transaction Store MCP', host: 'bedrock', publisher: 'Harbourline Data Platform', auth: 'IAM SigV4', endpoint: 'arn:aws:lambda:ap-southeast-2:331088421907:function:txn-mcp', tags: ['Internal', 'Approved'] },
+  'mcp-bureau':  { name: 'Credit Bureau MCP', host: 'bedrock', publisher: 'Third-party credit bureau', auth: 'API key (vault)', endpoint: 'https://mcp.bureau.example.com.au/v2', tags: ['Third party', 'Contract on file'] },
+  'mcp-lending': { name: 'Core Lending MCP', host: 'mulesoft', publisher: 'Harbourline Lending Platform', auth: 'mTLS', endpoint: 'https://api.harbourline.com.au/mcp/lending', tags: ['Internal', 'Approved'] },
+  'mcp-s3docs':  { name: 's3-docs-mcp', host: 'bedrock', publisher: 'Unknown (community image)', auth: 'None detected', endpoint: 'http://10.42.8.17:8080/mcp', tags: ['Unverified', 'No auth'] },
+  'mcp-bq':      { name: 'BigQuery MCP', host: 'vertex', publisher: 'Google (vendor)', auth: 'Service account', endpoint: 'mcp://bigquery.googleapis.com', tags: ['Verified publisher', 'Approved'] },
+  'mcp-cards':   { name: 'Cards Platform MCP', host: 'mulesoft', publisher: 'Harbourline Cards Engineering', auth: 'mTLS + OAuth', endpoint: 'https://api.harbourline.com.au/mcp/cards', tags: ['Internal', 'Approved'] },
+  'mcp-gdrive':  { name: 'gdrive-mcp (community fork)', host: 'vertex', publisher: 'Public GitHub fork', auth: 'User OAuth token in env var', endpoint: 'https://gdrive-mcp-x7f2.a.run.app', tags: ['Unverified', 'Community'] },
+};
+
+const TOOLS = {
+  't-case-read':     { name: 'Read service case', via: 'mcp-sfcrm', action: 'Read', data: 'Confidential', tags: ['Approved'] },
+  't-case-update':   { name: 'Update case & notes', via: 'mcp-sfcrm', action: 'Write', data: 'Confidential', tags: ['Approved'] },
+  't-fee-waiver':    { name: 'Apply fee waiver', via: 'mcp-core', action: 'Write', data: 'Financial', tags: ['Approved', 'Human approval > $250'] },
+  't-balance':       { name: 'Account balance lookup', via: 'mcp-core', action: 'Read', data: 'PII', tags: ['Approved'] },
+  't-hardship':      { name: 'Create hardship arrangement', via: 'mcp-core', action: 'Write', data: 'PII', tags: ['Approved', 'Human in the loop'] },
+  't-opps':          { name: 'Read opportunities', via: 'mcp-sfcrm', action: 'Read', data: 'Confidential', tags: ['Approved'] },
+  't-email-draft':   { name: 'Draft client email', via: 'native', action: 'Draft', data: 'Confidential', tags: ['Approved', 'Never auto-sends'] },
+  't-inc-create':    { name: 'Create incident', via: 'mcp-now', action: 'Write', data: 'Internal', tags: ['Approved'] },
+  't-kb-search':     { name: 'Search knowledge base', via: 'mcp-now', action: 'Read', data: 'Internal', tags: ['Approved'] },
+  't-change-read':   { name: 'Read change requests', via: 'mcp-now', action: 'Read', data: 'Internal', tags: ['Approved'] },
+  't-change-apply':  { name: 'Apply configuration change', via: 'mcp-now', action: 'Write', data: 'Production', tags: ['Restricted', 'CAB approval required'] },
+  't-cmdb':          { name: 'Query CMDB', via: 'mcp-now', action: 'Read', data: 'Internal', tags: ['Approved'] },
+  't-sp-search':     { name: 'Search SharePoint', via: 'mcp-m365', action: 'Read', data: 'Internal', tags: ['Approved'] },
+  't-contract-parse':{ name: 'Parse contract PDF', via: 'native', action: 'Read', data: 'External content', tags: ['Approved', 'Untrusted input'] },
+  't-vendor':        { name: 'Vendor master lookup', via: 'mcp-procure', action: 'Read', data: 'Confidential', tags: ['Approved'] },
+  't-sql':           { name: 'Run SQL on feature store', via: 'mcp-uc', action: 'Read', data: 'Confidential', tags: ['Approved', 'Row filters on'] },
+  't-shap':          { name: 'Compute SHAP explanation', via: 'native', action: 'Compute', data: 'Confidential', tags: ['Approved'] },
+  't-cand-read':     { name: 'Read candidate profile', via: 'mcp-wd', action: 'Read', data: 'Sensitive PII', tags: ['Approved'] },
+  't-cand-rank':     { name: 'Rank candidates', via: 'mcp-wd', action: 'Decide', data: 'Sensitive PII', tags: ['Suspended'] },
+  't-txn-query':     { name: 'Query transactions', via: 'mcp-txn', action: 'Read', data: 'PII', tags: ['Approved'] },
+  't-sanctions':     { name: 'Sanctions screening', via: 'mcp-fincrime', action: 'Read', data: 'PII', tags: ['Approved', 'Verified'] },
+  't-case-write':    { name: 'Write FinCrime case note', via: 'mcp-fincrime', action: 'Write', data: 'PII', tags: ['Approved', 'Human in the loop'] },
+  't-device':        { name: 'Device intelligence lookup', via: 'mcp-fincrime', action: 'Read', data: 'PII', tags: ['Approved'] },
+  't-bureau':        { name: 'Credit bureau enquiry', via: 'mcp-bureau', action: 'Read', data: 'Credit info', tags: ['Contract on file', 'Consent required'] },
+  't-serviceability':{ name: 'Serviceability calculator', via: 'mcp-lending', action: 'Compute', data: 'Financial', tags: ['Approved', 'Model validated'] },
+  't-doc-extract':   { name: 'Extract document fields', via: 'native', action: 'Read', data: 'PII', tags: ['Approved'] },
+  't-s3-read':       { name: 'Read S3 object', via: 'mcp-s3docs', action: 'Read', data: 'PII', tags: ['Unverified', 'Wildcard bucket access'] },
+  't-transcript':    { name: 'Fetch call transcript', via: 'native', action: 'Read', data: 'PII', tags: ['Approved'] },
+  't-bq-query':      { name: 'Query BigQuery', via: 'mcp-bq', action: 'Read', data: 'Confidential', tags: ['Approved'] },
+  't-research':      { name: 'Search research library', via: 'native', action: 'Read', data: 'Licensed', tags: ['Approved'] },
+  't-dispute-file':  { name: 'Lodge card dispute', via: 'mcp-cards', action: 'Write', data: 'PCI', tags: ['Approved'] },
+  't-chargeback':    { name: 'Raise chargeback', via: 'mcp-cards', action: 'Write', data: 'PCI', tags: ['Approved', 'Human approval > $1,000'] },
+  't-gdrive':        { name: 'Read Google Drive files', via: 'mcp-gdrive', action: 'Read', data: 'Unknown', tags: ['Unverified'] },
+  't-image-gen':     { name: 'Generate image', via: 'native', action: 'Create', data: 'Public', tags: ['Approved'] },
+  't-route':         { name: 'Route complaint to IDR queue', via: 'native', action: 'Write', data: 'PII', tags: ['Approved'] },
+  't-bq-export':     { name: 'Read prod customer extract', via: 'mcp-bq', action: 'Read', data: 'PII', tags: ['Unapproved use'] },
+};
+
+const SKILLS = {
+  'sk-fees':        { name: 'Fees & charges answering', library: 'Harbourline Skill Library', version: '2.3.1', publisher: 'Retail Products', tags: ['Approved', 'Evaluated'] },
+  'sk-idr':         { name: 'Complaint detection (IDR)', library: 'Harbourline Skill Library', version: '1.4.0', publisher: 'Customer Advocacy', tags: ['Approved', 'Regulatory'] },
+  'sk-hardship':    { name: 'Financial hardship assessment', library: 'Harbourline Skill Library', version: '1.1.2', publisher: 'Collections', tags: ['Approved', 'Evaluated'] },
+  'sk-rm-brief':    { name: 'Client meeting brief', library: 'Agentforce standard skills', version: '3.0', publisher: 'Salesforce', tags: ['Verified'] },
+  'sk-triage':      { name: 'IT ticket triage', library: 'ServiceNow skills', version: '5.2', publisher: 'ServiceNow', tags: ['Verified'] },
+  'sk-change-risk': { name: 'Change risk scoring', library: 'Harbourline Skill Library', version: '2.0.0', publisher: 'IT Risk', tags: ['Approved', 'Re-evaluated'] },
+  'sk-hr-policy':   { name: 'HR policy Q&A', library: 'Harbourline Skill Library', version: '1.0.3', publisher: 'People & Culture', tags: ['Approved'] },
+  'sk-redflags':    { name: 'Contract red-flag review', library: 'Harbourline Skill Library', version: '1.2.0', publisher: 'Legal Ops', tags: ['Approved', 'Injection hardened'] },
+  'sk-explain':     { name: 'Credit decision explanation', library: 'Harbourline Skill Library', version: '1.3.0', publisher: 'Model Risk', tags: ['Approved', 'Validated'] },
+  'sk-screen':      { name: 'Candidate screening', library: 'Workday skills', version: '2025.2', publisher: 'Workday', tags: ['Suspended', 'Bias review'] },
+  'sk-smr':         { name: 'SMR narrative drafting', library: 'Harbourline Skill Library', version: '1.6.0', publisher: 'Financial Crime', tags: ['Approved', 'Citations verified'] },
+  'sk-fraud':       { name: 'Fraud pattern triage', library: 'Harbourline Skill Library', version: '2.1.0', publisher: 'Financial Crime', tags: ['Approved', 'Evaluated'] },
+  'sk-serviceability': { name: 'Responsible lending checks', library: 'Harbourline Skill Library', version: '1.0.0', publisher: 'Lending Risk', tags: ['Draft'] },
+  'sk-docverify':   { name: 'Income document verification', library: 'Team repo (lending-ai)', version: '0.9.4', publisher: 'Lending Transformation', tags: ['Unreviewed'] },
+  'sk-callsum':     { name: 'Call summarisation', library: 'Harbourline Skill Library', version: '1.2.0', publisher: 'Contact Centre', tags: ['Approved'] },
+  'sk-research':    { name: 'General advice research', library: 'Harbourline Skill Library', version: '1.1.0', publisher: 'Wealth Digital', tags: ['Approved', 'General advice only'] },
+  'sk-dispute':     { name: 'Card scheme dispute rules', library: 'Harbourline Skill Library', version: '3.4.0', publisher: 'Cards & Payments', tags: ['Approved', 'Evaluated'] },
+  'sk-brand':       { name: 'Brand voice writing', library: 'Marketing prompt pack', version: '0.3.0', publisher: 'Marketing Technology', tags: ['Unreviewed'] },
+  'sk-classify':    { name: 'Complaint classification', library: 'Harbourline Skill Library', version: '2.0.1', publisher: 'Customer Advocacy', tags: ['Approved', 'Evaluated'] },
+};
+
+const DATA = {
+  'ds-product-kb':  { name: 'Product disclosure & fees KB', platform: 'Salesforce Data Cloud', cls: 'Public', tags: ['Clean', 'Trusted', 'Lineage verified'] },
+  'ds-c360':        { name: 'Customer 360 profile', platform: 'Salesforce Data Cloud', cls: 'PII', tags: ['Trusted', 'Masked for AI'] },
+  'ds-ledger':      { name: 'Core banking ledger', platform: 'Mainframe via MuleSoft', cls: 'Confidential', tags: ['Trusted', 'System of record'] },
+  'ds-itsm':        { name: 'CMDB & incident history', platform: 'ServiceNow', cls: 'Internal', tags: ['Clean'] },
+  'ds-hr':          { name: 'HR policy library', platform: 'SharePoint', cls: 'Internal', tags: ['Stale: 94 days'] },
+  'ds-contracts':   { name: 'Vendor contracts', platform: 'SharePoint', cls: 'Confidential', tags: ['External content', 'Scanned for injection'] },
+  'ds-features':    { name: 'Credit risk feature store', platform: 'Databricks Unity Catalog', cls: 'Confidential', tags: ['Clean', 'Lineage verified'] },
+  'ds-candidates':  { name: 'Candidate profiles', platform: 'Workday', cls: 'Sensitive PII', tags: ['Bias audit pending'] },
+  'ds-txn':         { name: 'Transaction history', platform: 'Amazon Aurora', cls: 'PII', tags: ['Trusted', 'Lineage verified'] },
+  'ds-aml-rules':   { name: 'AML/CTF Rules corpus', platform: 'Reference library', cls: 'Public', tags: ['Trusted', 'Versioned'] },
+  'ds-loan-docs':   { name: 'Loan application documents', platform: 'Amazon S3', cls: 'PII', tags: ['Unclassified bucket'] },
+  'ds-bureau':      { name: 'Credit bureau reports', platform: 'Third party', cls: 'Credit info', tags: ['Consent tracked'] },
+  'ds-calls':       { name: 'Call transcripts', platform: 'Amazon S3', cls: 'PII', tags: ['Redacted'] },
+  'ds-research':    { name: 'Research & market data', platform: 'Licensed feed', cls: 'Licensed', tags: ['Trusted'] },
+  'ds-cardtxn':     { name: 'Card transactions', platform: 'BigQuery', cls: 'PCI', tags: ['Tokenised', 'Trusted'] },
+  'ds-brand':       { name: 'Brand asset library', platform: 'Google Drive', cls: 'Public', tags: ['Clean'] },
+  'ds-complaints':  { name: 'Complaints register', platform: 'BigQuery', cls: 'PII', tags: ['Trusted'] },
+  'ds-prod-extract':{ name: 'Prod customer extract (unmasked)', platform: 'BigQuery', cls: 'PII', tags: ['Unapproved use', 'Unmasked'] },
+};
+
+const REGS = {
+  cps230: 'APRA CPS 230 Operational Risk',
+  cps234: 'APRA CPS 234 Information Security',
+  privacy: 'Privacy Act 1988 (APPs)',
+  aisafety: 'AU Voluntary AI Safety Standard',
+  iso42001: 'ISO/IEC 42001',
+  amlctf: 'AML/CTF Act 2006',
+  rg271: 'ASIC RG 271 (IDR)',
+  nccp: 'NCCP Act (responsible lending)',
+  rg244: 'ASIC RG 244 (advice)',
+  sda: 'Sex Discrimination Act / anti-discrimination',
+};
+
+/* Agents already in the registry before the demo scan. */
+const BASE_AGENTS = [
+  { id: 'A01', name: 'Business Banking Service Agent', platform: 'agentforce', connector: 'sf-prod', env: 'Production', region: 'Hyperforce AU (Sydney)',
+    bu: 'Business Banking', owner: 'Daniel Okafor', ownerRole: 'Product Owner, Business Banking Digital', users: { count: 18420, groups: ['Business customers (web & app chat)', 'Service centre staff (312)'] },
+    customerFacing: true, autonomy: 'L3 · Acts within guardrails', risk: 'High', status: 'Approved with conditions', version: '4.2.0',
+    desc: 'Answers business customers on fees, payments and account servicing. Can apply fee waivers up to $250 without staff approval.',
+    models: ['m-gpt41'], skills: ['sk-fees', 'sk-idr'], tools: ['t-case-read', 't-case-update', 't-balance', 't-fee-waiver'], data: ['ds-product-kb', 'ds-c360', 'ds-ledger'], a2a: [],
+    protocols: ['A2A', 'MCP'], inv30: 48210, scores: { gov: 90, sec: 84, data: 88, rel: 72, trans: 81 }, regs: ['cps230', 'privacy', 'rg271', 'aisafety'], discovered: 'Agentforce Agent API', card: 'https://harbourline.my.salesforce.com/.well-known/agent-card.json' },
+  { id: 'A02', name: 'Relationship Manager Copilot', platform: 'agentforce', connector: 'sf-prod', env: 'Production', region: 'Hyperforce AU (Sydney)',
+    bu: 'Business Banking', owner: 'Daniel Okafor', ownerRole: 'Product Owner, Business Banking Digital', users: { count: 486, groups: ['Relationship managers', 'Credit analysts'] },
+    customerFacing: false, autonomy: 'L1 · Suggests only', risk: 'Medium', status: 'Approved', version: '2.1.0',
+    desc: 'Prepares meeting briefs and follow-up emails for relationship managers from CRM and account data.',
+    models: ['m-gpt41'], skills: ['sk-rm-brief'], tools: ['t-opps', 't-case-read', 't-email-draft'], data: ['ds-c360'], a2a: [],
+    protocols: ['MCP'], inv30: 9214, scores: { gov: 94, sec: 90, data: 91, rel: 88, trans: 86 }, regs: ['privacy', 'aisafety'], discovered: 'Agentforce Agent API' },
+  { id: 'A03', name: 'Collections Hardship Agent', platform: 'agentforce', connector: 'sf-prod', env: 'Production', region: 'Hyperforce AU (Sydney)',
+    bu: 'Retail Collections', owner: 'Aisha Rahman', ownerRole: 'Customer Advocacy Lead', users: { count: 3120, groups: ['Customers in arrears (app)', 'Collections officers (88)'] },
+    customerFacing: true, autonomy: 'L2 · Acts with human approval', risk: 'High', status: 'Approved', version: '1.3.1',
+    desc: 'Helps customers in financial difficulty set up hardship arrangements. Every arrangement is approved by a collections officer.',
+    models: ['m-gpt41'], skills: ['sk-hardship', 'sk-idr'], tools: ['t-balance', 't-hardship', 't-case-update'], data: ['ds-c360', 'ds-ledger'], a2a: [],
+    protocols: ['MCP'], inv30: 6402, scores: { gov: 93, sec: 88, data: 90, rel: 85, trans: 89 }, regs: ['nccp', 'rg271', 'privacy', 'aisafety'], discovered: 'Agentforce Agent API' },
+  { id: 'A04', name: 'IT Service Desk Agent', platform: 'servicenow', connector: 'now-prod', env: 'Production', region: 'ServiceNow AU',
+    bu: 'Technology', owner: 'Tom Brennan', ownerRole: 'Head of IT Service Management', users: { count: 9800, groups: ['All staff'] },
+    customerFacing: false, autonomy: 'L3 · Acts within guardrails', risk: 'Low', status: 'Approved', version: '3.0.2',
+    desc: 'Resolves password, access and device requests for staff and raises incidents for the service desk.',
+    models: ['m-nowllm'], skills: ['sk-triage'], tools: ['t-inc-create', 't-kb-search', 't-cmdb'], data: ['ds-itsm'], a2a: [],
+    protocols: ['MCP'], inv30: 61204, scores: { gov: 92, sec: 89, data: 93, rel: 91, trans: 84 }, regs: ['cps234'], discovered: 'AI Agent Studio API' },
+  { id: 'A05', name: 'Change Risk Assessor', platform: 'servicenow', connector: 'now-prod', env: 'Production', region: 'ServiceNow AU',
+    bu: 'Technology', owner: 'Tom Brennan', ownerRole: 'Head of IT Service Management', users: { count: 140, groups: ['Change managers', 'Platform engineers'] },
+    customerFacing: false, autonomy: 'L2 · Acts with human approval', risk: 'High', status: 'Approved with conditions', version: '2.0.0',
+    desc: 'Scores change requests for risk and drafts CAB packs. Write access to production was removed after INC-2033.',
+    models: ['m-nowllm'], skills: ['sk-change-risk'], tools: ['t-change-read', 't-cmdb', 't-change-apply'], data: ['ds-itsm'], a2a: [],
+    protocols: ['MCP'], inv30: 2214, scores: { gov: 78, sec: 70, data: 86, rel: 68, trans: 77 }, regs: ['cps230', 'cps234'], discovered: 'AI Agent Studio API' },
+  { id: 'A06', name: 'HR Policy Assistant', platform: 'copilot', connector: 'm365', env: 'Production', region: 'Microsoft AU East',
+    bu: 'People & Culture', owner: 'Sarah Whitfield', ownerRole: 'People Systems Manager', users: { count: 9100, groups: ['All staff'] },
+    customerFacing: false, autonomy: 'L1 · Suggests only', risk: 'Low', status: 'Approved', version: '1.4.0',
+    desc: 'Answers staff questions on leave, benefits and workplace policies from the HR policy library.',
+    models: ['m-gpt4o'], skills: ['sk-hr-policy'], tools: ['t-sp-search'], data: ['ds-hr'], a2a: [],
+    protocols: [], inv30: 14530, scores: { gov: 88, sec: 90, data: 64, rel: 82, trans: 85 }, regs: ['privacy'], discovered: 'Power Platform admin API' },
+  { id: 'A07', name: 'Procurement Contract Reviewer', platform: 'copilot', connector: 'm365', env: 'Production', region: 'Microsoft AU East',
+    bu: 'Procurement', owner: 'Hannah Reid', ownerRole: 'Procurement Operations Lead', users: { count: 64, groups: ['Procurement analysts', 'Legal ops'] },
+    customerFacing: false, autonomy: 'L1 · Suggests only', risk: 'Medium', status: 'Approved with conditions', version: '1.2.0',
+    desc: 'Reviews vendor contracts against bank policy and flags clauses for legal. Hardened after INC-2038.',
+    models: ['m-gpt4o'], skills: ['sk-redflags'], tools: ['t-contract-parse', 't-sp-search', 't-vendor'], data: ['ds-contracts'], a2a: [],
+    protocols: ['MCP'], inv30: 1880, scores: { gov: 85, sec: 76, data: 80, rel: 83, trans: 82 }, regs: ['cps230', 'cps234'], discovered: 'Power Platform admin API' },
+  { id: 'A08', name: 'Credit Risk Model Explainer', platform: 'databricks', connector: 'dbx', env: 'Production', region: 'Azure AU East',
+    bu: 'Credit Risk', owner: 'Marcus Tan', ownerRole: 'Head of Credit Risk Modelling', users: { count: 72, groups: ['Credit analysts', 'Model validators'] },
+    customerFacing: false, autonomy: 'L1 · Suggests only', risk: 'Medium', status: 'Approved', version: '1.3.0',
+    desc: 'Explains credit model outcomes in plain English using SHAP values from the feature store.',
+    models: ['m-llama70'], skills: ['sk-explain'], tools: ['t-sql', 't-shap'], data: ['ds-features'], a2a: [],
+    protocols: ['MCP'], inv30: 3310, scores: { gov: 95, sec: 92, data: 96, rel: 90, trans: 94 }, regs: ['nccp', 'aisafety', 'iso42001'], discovered: 'Serving endpoints + Unity Catalog' },
+  { id: 'A09', name: 'Recruitment Screening Assistant', platform: 'workday', connector: 'wd', env: 'Production', region: 'Workday AU',
+    bu: 'People & Culture', owner: 'Sarah Whitfield', ownerRole: 'People Systems Manager', users: { count: 38, groups: ['Talent acquisition'] },
+    customerFacing: false, autonomy: 'L2 · Acts with human approval', risk: 'High', status: 'Suspended', version: '2025.2',
+    desc: 'Ranks applicants for high-volume roles. Suspended while a bias audit runs (INC-2017).',
+    models: ['m-illuminate'], skills: ['sk-screen'], tools: ['t-cand-read', 't-cand-rank'], data: ['ds-candidates'], a2a: [],
+    protocols: [], inv30: 0, scores: { gov: 70, sec: 86, data: 58, rel: 61, trans: 52 }, regs: ['sda', 'privacy', 'aisafety'], discovered: 'Vendor AI feature inventory' },
+  { id: 'A10', name: 'AML Narrative Drafting Agent', platform: 'bedrock', connector: 'aws-core', env: 'Production', region: 'ap-southeast-2 (Sydney)',
+    bu: 'Financial Crime', owner: 'Arjun Mehta', ownerRole: 'Financial Crime Analytics Lead', users: { count: 54, groups: ['AML investigators'] },
+    customerFacing: false, autonomy: 'L2 · Acts with human approval', risk: 'High', status: 'Approved with conditions', version: '1.6.0',
+    desc: 'Drafts suspicious matter report narratives for investigators. Every citation is now checked against the rules corpus.',
+    models: ['m-claude', 'm-titan'], skills: ['sk-smr'], tools: ['t-txn-query', 't-sanctions', 't-case-write'], data: ['ds-txn', 'ds-aml-rules'], a2a: ['A11'],
+    protocols: ['A2A', 'MCP'], inv30: 4120, scores: { gov: 88, sec: 91, data: 90, rel: 76, trans: 87 }, regs: ['amlctf', 'privacy', 'cps230', 'aisafety'], discovered: 'Bedrock Agents API', card: 'https://agents.fincrime.harbourline.internal/aml-narrative/.well-known/agent-card.json' },
+  { id: 'A11', name: 'Fraud Triage Copilot', platform: 'bedrock', connector: 'aws-core', env: 'Production', region: 'ap-southeast-2 (Sydney)',
+    bu: 'Financial Crime', owner: 'Arjun Mehta', ownerRole: 'Financial Crime Analytics Lead', users: { count: 120, groups: ['Fraud operations analysts'] },
+    customerFacing: false, autonomy: 'L1 · Suggests only', risk: 'Medium', status: 'Approved', version: '2.1.0',
+    desc: 'Triage assistant for fraud alerts. Summarises device, transaction and behavioural signals.',
+    models: ['m-claude'], skills: ['sk-fraud'], tools: ['t-txn-query', 't-device'], data: ['ds-txn'], a2a: ['A10'],
+    protocols: ['A2A', 'MCP'], inv30: 22780, scores: { gov: 92, sec: 93, data: 89, rel: 87, trans: 88 }, regs: ['amlctf', 'privacy', 'cps234'], discovered: 'AgentCore runtime API', card: 'https://agents.fincrime.harbourline.internal/fraud-triage/.well-known/agent-card.json' },
+];
+
+/* Assets the live scans find. */
+const SCAN_AGENTS = {
+  'aws-retail': [
+    { id: 'S01', name: 'Home Loan Pre-Assessment Agent', platform: 'bedrock', connector: 'aws-retail', env: 'Production', region: 'ap-southeast-2 (Sydney)',
+      bu: 'Retail Lending', owner: 'Priya Natarajan', ownerRole: 'Lending Transformation Lead', users: { count: 2140, groups: ['Home loan applicants (app)', 'Mobile lenders (46)'] },
+      customerFacing: true, autonomy: 'L2 · Acts with human approval', risk: 'High', status: 'In review', version: '0.9.0',
+      desc: 'Pre-assesses home loan applications: pulls a bureau report, runs serviceability and explains next steps to applicants.',
+      models: ['m-claude'], skills: ['sk-serviceability', 'sk-docverify'], tools: ['t-bureau', 't-serviceability', 't-doc-extract'], data: ['ds-bureau', 'ds-loan-docs'], a2a: [],
+      protocols: ['MCP'], inv30: 7310, scores: { gov: 62, sec: 74, data: 66, rel: 70, trans: 64 }, regs: ['nccp', 'privacy', 'aisafety'], discovered: 'Bedrock Agents API (ListAgents)' },
+    { id: 'S02', name: 'Broker Document Checker', platform: 'bedrock', connector: 'aws-retail', env: 'Production', region: 'ap-southeast-2 (Sydney)',
+      bu: 'Retail Lending', owner: 'Priya Natarajan', ownerRole: 'Lending Transformation Lead', users: { count: 610, groups: ['Accredited brokers'] },
+      customerFacing: true, autonomy: 'L1 · Suggests only', risk: 'Medium', status: 'In review', version: '1.1.0',
+      desc: 'Checks broker-submitted income documents for completeness before they reach a credit assessor.',
+      models: ['m-claude'], skills: ['sk-docverify'], tools: ['t-doc-extract'], data: ['ds-loan-docs'], a2a: ['S01'],
+      protocols: ['A2A', 'MCP'], inv30: 3920, scores: { gov: 68, sec: 78, data: 70, rel: 80, trans: 72 }, regs: ['nccp', 'privacy'], discovered: 'A2A agent card on API Gateway', card: 'https://brokers.harbourline.com.au/doc-check/.well-known/agent-card.json' },
+    { id: 'S03', name: 'Contact Centre Summariser', platform: 'bedrock', connector: 'aws-retail', env: 'Production', region: 'ap-southeast-2 (Sydney)',
+      bu: 'Contact Centre', owner: 'Ben Kowalski', ownerRole: 'Platform Engineering Manager', users: { count: 1150, groups: ['Contact centre consultants'] },
+      customerFacing: false, autonomy: 'L1 · Suggests only', risk: 'Low', status: 'In review', version: '2.0.0',
+      desc: 'Summarises calls into CRM notes and flags possible complaints for the IDR team.',
+      models: ['m-nova'], skills: ['sk-callsum', 'sk-idr'], tools: ['t-transcript', 't-case-update'], data: ['ds-calls'], a2a: [],
+      protocols: ['MCP'], inv30: 88412, scores: { gov: 80, sec: 86, data: 84, rel: 88, trans: 79 }, regs: ['privacy', 'rg271'], discovered: 'Bedrock Agents API (ListAgents)' },
+    { id: 'S04', name: 'loan-docs-poc', platform: 'bedrock', connector: 'aws-retail', env: 'Unknown', region: 'ap-southeast-2 (Sydney)',
+      bu: 'Unassigned', owner: 'Unassigned', ownerRole: 'Created by IAM role lending-ds-sandbox', users: { count: 0, groups: ['Unknown · 1,904 invocations from 3 IAM principals'] },
+      customerFacing: false, autonomy: 'Unknown', risk: 'High', status: 'Shadow', version: 'n/a',
+      desc: 'Unregistered workload calling a self-hosted open-weight model against real loan documents. Found from SageMaker invocation telemetry.',
+      models: ['m-llama8'], skills: [], tools: ['t-s3-read'], data: ['ds-loan-docs'], a2a: [],
+      protocols: ['MCP'], inv30: 1904, scores: { gov: 12, sec: 28, data: 31, rel: 40, trans: 15 }, regs: ['privacy', 'cps234'], discovered: 'SageMaker InvokeEndpoint telemetry + MCP probe' },
+  ],
+  'gcp-wealth': [
+    { id: 'G01', name: 'Wealth Research Assistant', platform: 'vertex', connector: 'gcp-wealth', env: 'Production', region: 'australia-southeast1',
+      bu: 'Wealth Management', owner: 'Grace Liu', ownerRole: 'Head of Wealth Digital', users: { count: 240, groups: ['Financial advisers', 'Para-planners'] },
+      customerFacing: false, autonomy: 'L1 · Suggests only', risk: 'Medium', status: 'In review', version: '1.1.0',
+      desc: 'Research assistant for advisers. Restricted to general information; personal advice stays with the licensed adviser.',
+      models: ['m-gemini-pro'], skills: ['sk-research'], tools: ['t-research', 't-bq-query'], data: ['ds-research'], a2a: [],
+      protocols: ['A2A'], inv30: 5310, scores: { gov: 82, sec: 85, data: 88, rel: 84, trans: 80 }, regs: ['rg244', 'privacy'], discovered: 'Vertex AI Agent Engine (reasoningEngines.list)', card: 'https://wealth.harbourline.com.au/research/.well-known/agent-card.json' },
+    { id: 'G02', name: 'Card Disputes Agent', platform: 'vertex', connector: 'gcp-wealth', env: 'Production', region: 'australia-southeast1',
+      bu: 'Cards & Payments', owner: "Liam O'Connor", ownerRole: 'Cards Operations Manager', users: { count: 4380, groups: ['Card holders (via Service Agent)', 'Disputes team (24)'] },
+      customerFacing: true, autonomy: 'L3 · Acts within guardrails', risk: 'High', status: 'In review', version: '2.2.0',
+      desc: 'Lodges card disputes and chargebacks. Called over A2A by the Business Banking Service Agent in Salesforce.',
+      models: ['m-gemini-flash'], skills: ['sk-dispute'], tools: ['t-dispute-file', 't-chargeback', 't-bq-query'], data: ['ds-cardtxn'], a2a: ['A01'],
+      protocols: ['A2A', 'MCP'], inv30: 12904, scores: { gov: 76, sec: 82, data: 87, rel: 81, trans: 74 }, regs: ['cps230', 'privacy', 'rg271'], discovered: 'A2A agent card + Agent Engine', card: 'https://cards.harbourline.com.au/disputes/.well-known/agent-card.json' },
+    { id: 'G03', name: 'Marketing Content Studio', platform: 'vertex', connector: 'gcp-wealth', env: 'Production', region: 'us-central1 + australia-southeast1',
+      bu: 'Marketing', owner: 'Zoe Campbell', ownerRole: 'Marketing Technology Lead', users: { count: 58, groups: ['Marketing team', 'Agency partners (2)'] },
+      customerFacing: false, autonomy: 'L1 · Suggests only', risk: 'Medium', status: 'In review', version: '0.4.0',
+      desc: 'Generates campaign copy and imagery. Image generation runs outside Australia.',
+      models: ['m-gemini-flash', 'm-imagen'], skills: ['sk-brand'], tools: ['t-image-gen', 't-gdrive'], data: ['ds-brand'], a2a: [],
+      protocols: ['MCP'], inv30: 2160, scores: { gov: 58, sec: 55, data: 72, rel: 78, trans: 60 }, regs: ['privacy', 'aisafety'], discovered: 'Cloud Audit Logs (generateContent, predict)' },
+    { id: 'G04', name: 'Complaints Classifier', platform: 'vertex', connector: 'gcp-wealth', env: 'Production', region: 'australia-southeast1',
+      bu: 'Customer Advocacy', owner: 'Aisha Rahman', ownerRole: 'Customer Advocacy Lead', users: { count: 36, groups: ['IDR team'] },
+      customerFacing: false, autonomy: 'L2 · Acts with human approval', risk: 'Medium', status: 'In review', version: '2.0.1',
+      desc: 'Classifies complaints and routes them to the right IDR queue using a self-hosted open-weight model.',
+      models: ['m-gemma'], skills: ['sk-classify'], tools: ['t-route', 't-bq-query'], data: ['ds-complaints'], a2a: [],
+      protocols: [], inv30: 15420, scores: { gov: 84, sec: 87, data: 86, rel: 83, trans: 80 }, regs: ['rg271', 'privacy'], discovered: 'GKE workload scan (vLLM image) + weights hash' },
+    { id: 'G05', name: 'notebook-gemini-experiment', platform: 'vertex', connector: 'gcp-wealth', env: 'Unknown', region: 'australia-southeast1',
+      bu: 'Unassigned', owner: 'Unassigned', ownerRole: 'Vertex Workbench user j.park@harbourline.com.au', users: { count: 1, groups: ['Single user notebook'] },
+      customerFacing: false, autonomy: 'Unknown', risk: 'High', status: 'Shadow', version: 'n/a',
+      desc: 'Notebook sending an unmasked production customer extract to Gemini. Found from Cloud Audit Logs.',
+      models: ['m-gemini-pro'], skills: [], tools: ['t-bq-export', 't-gdrive'], data: ['ds-prod-extract'], a2a: [],
+      protocols: ['MCP'], inv30: 642, scores: { gov: 10, sec: 35, data: 18, rel: 50, trans: 20 }, regs: ['privacy', 'cps234'], discovered: 'Cloud Audit Logs (generateContent)' },
+  ],
+};
+
+const SCAN_SCRIPT = {
+  'aws-retail': [
+    ['info', 'Assuming role arn:aws:iam::482177301956:role/AgentNexusReadOnly (external ID verified)'],
+    ['info', 'Regions in scope: ap-southeast-2, ap-southeast-4, us-east-1'],
+    ['step', 'Control plane · Bedrock Agents'],
+    ['found', 'bedrock-agent:ListAgents → home-loan-preassess (agent id HLPA7K2Q)'],
+    ['found', 'bedrock-agent:ListAgents → contact-centre-summariser (agent id CCS91XMT)'],
+    ['step', 'Control plane · AgentCore runtimes'],
+    ['info', 'No AgentCore runtimes in ap-southeast-4'],
+    ['step', 'A2A agent cards'],
+    ['info', 'Probing /.well-known/agent-card.json on 37 API Gateway and ALB hosts'],
+    ['found', 'brokers.harbourline.com.au/doc-check → A2A card "Broker Document Checker" v1.1.0'],
+    ['step', 'MCP servers'],
+    ['found', 'MCP handshake · credit-bureau-mcp → 3 tools (enquiry, score, consent)'],
+    ['found', 'MCP handshake · core-lending-mcp → 6 tools'],
+    ['warn',  'MCP handshake · 10.42.8.17:8080 → s3-docs-mcp answered without authentication'],
+    ['step', 'Model invocation telemetry'],
+    ['info', 'CloudTrail InvokeModel · 30 days · 1.21M events · 4 model IDs'],
+    ['info', 'us-east-1 · 0 invocations (residency OK)'],
+    ['step', 'Open-weight models'],
+    ['warn',  'SageMaker endpoint llama31-8b-loan-poc · image vllm/vllm-openai:0.6.3 · no registry entry'],
+    ['found', 'Weights hash sha256:9f2c…e41a matched Hugging Face meta-llama/Llama-3.1-8B-Instruct'],
+    ['warn',  'Endpoint invoked 1,904 times by 3 IAM principals, reading s3://hlb-loan-applications/*'],
+    ['step', 'Building graph & scoring'],
+    ['info', 'Linked 4 agents → 9 tools → 3 MCP servers → 3 models'],
+    ['done', 'Scan complete'],
+  ],
+  'gcp-wealth': [
+    ['info', 'Authenticating as agent-nexus-scanner@hlb-wealth-cards.iam.gserviceaccount.com'],
+    ['info', 'Roles: aiplatform.viewer, logging.viewer, container.viewer'],
+    ['step', 'Control plane · Vertex AI Agent Engine'],
+    ['found', 'reasoningEngines.list → wealth-research-assistant (australia-southeast1)'],
+    ['found', 'reasoningEngines.list → card-disputes-agent (australia-southeast1)'],
+    ['step', 'A2A agent cards'],
+    ['found', 'cards.harbourline.com.au/disputes → A2A card with 2 skills; peer: Salesforce Service Agent'],
+    ['found', 'wealth.harbourline.com.au/research → A2A card v1.1.0'],
+    ['step', 'MCP servers'],
+    ['found', 'MCP handshake · bigquery MCP (Google) → 4 tools'],
+    ['warn',  'MCP handshake · gdrive-mcp-x7f2.a.run.app → community fork, OAuth token stored in env var'],
+    ['step', 'Model invocation telemetry'],
+    ['info', 'Cloud Audit Logs · generateContent / predict · 30 days · 412K calls'],
+    ['warn',  'Imagen 3 calls routed to us-central1 from project hlb-marketing-studio'],
+    ['warn',  'Vertex Workbench notebook calling Gemini with table prod_customers_unmasked'],
+    ['step', 'Open-weight models'],
+    ['found', 'GKE deployment complaints-classifier · vllm image · Gemma 3 12B weights hash verified'],
+    ['step', 'Building graph & scoring'],
+    ['info', 'Linked 5 agents → 10 tools → 3 MCP servers → 4 models'],
+    ['done', 'Scan complete'],
+  ],
+};
+
+const DISCOVERY_METHODS = [
+  { id: 'cp',   name: 'Control-plane APIs', detail: 'Bedrock ListAgents, AgentCore runtimes, Vertex Agent Engine, SaaS agent inventories' },
+  { id: 'a2a',  name: 'A2A agent cards', detail: 'Probe /.well-known/agent-card.json on gateways and load balancers' },
+  { id: 'mcp',  name: 'MCP servers', detail: 'Handshake discovered endpoints and record tools/list, auth and publisher' },
+  { id: 'tel',  name: 'Model invocation telemetry', detail: 'CloudTrail InvokeModel and Cloud Audit Logs generateContent, 30 days' },
+  { id: 'ow',   name: 'Open-weight models', detail: 'SageMaker, GKE and container images running vLLM, TGI or Ollama; weights hashed against Hugging Face' },
+  { id: 'code', name: 'Code & IaC signals', detail: 'Agent SDK imports and Terraform resources in linked repos' },
+];
+
+const REVIEWS = [
+  { id: 'R-311', agent: 'Mortgage Broker Assist', platform: 'agentforce', submitter: 'Priya Natarajan', bu: 'Retail Lending', submitted: '2026-10-27', due: '2026-11-03',
+    purpose: 'Answers broker questions on policy, pricing and application status in the broker portal.', customerFacing: true, autonomy: 'L2 · Acts with human approval', risk: 'High',
+    model: 'GPT-4.1 via Einstein Trust Layer', tools: ['Application status lookup (read)', 'Pricing exception request (write)'], data: ['Broker CRM', 'Credit policy KB'], dataCls: ['Confidential', 'PII'],
+    evals: { groundedness: 94.2, redteam: 97, bias: 'Pass', jailbreak: 99.1 }, pia: 'Completed', cps230: 'Not material', hitl: 'Pricing exceptions approved by credit manager',
+    guardrails: [1,1,1,1,1,1,0,1,1,1], status: 'Pending', notes: [] },
+  { id: 'R-312', agent: 'Treasury FX Insights Agent', platform: 'databricks', submitter: 'Marcus Tan', bu: 'Treasury', submitted: '2026-10-26', due: '2026-11-02',
+    purpose: 'Summarises FX exposure and market moves for the treasury desk each morning.', customerFacing: false, autonomy: 'L1 · Suggests only', risk: 'Medium',
+    model: 'Llama 3.3 70B Instruct (open-weight)', tools: ['Run SQL on treasury mart (read)'], data: ['Treasury positions', 'Market data feed'], dataCls: ['Confidential'],
+    evals: { groundedness: 96.8, redteam: 95, bias: 'n/a', jailbreak: 98.4 }, pia: 'Not required', cps230: 'Not material', hitl: 'Advisory output only',
+    guardrails: [1,1,1,1,1,1,1,1,1,1], status: 'Pending', notes: [] },
+  { id: 'R-313', agent: 'Branch Rostering Agent', platform: 'copilot', submitter: 'Sarah Whitfield', bu: 'Retail Branches', submitted: '2026-10-28', due: '2026-11-04',
+    purpose: 'Drafts weekly branch rosters from leave and demand forecasts for branch managers.', customerFacing: false, autonomy: 'L1 · Suggests only', risk: 'Low',
+    model: 'GPT-4o (Microsoft hosted)', tools: ['Read leave calendar', 'Draft roster (no publish)'], data: ['Workforce calendar'], dataCls: ['Internal'],
+    evals: { groundedness: 91.0, redteam: 93, bias: 'Pass', jailbreak: 97.7 }, pia: 'Completed', cps230: 'Not material', hitl: 'Manager publishes roster',
+    guardrails: [1,1,1,1,1,1,1,1,1,1], status: 'Pending', notes: [] },
+  { id: 'R-314', agent: 'Super Rollover Helper', platform: 'vertex', submitter: 'Grace Liu', bu: 'Wealth Management', submitted: '2026-10-24', due: '2026-10-31',
+    purpose: 'Guides customers through consolidating superannuation into a Harbourline account.', customerFacing: true, autonomy: 'L3 · Acts within guardrails', risk: 'High',
+    model: 'Gemini 2.5 Pro', tools: ['Fund search (read)', 'Initiate rollover (write)'], data: ['Customer 360', 'Super fund register'], dataCls: ['PII', 'Financial'],
+    evals: { groundedness: 88.4, redteam: 84, bias: 'Not run', jailbreak: 92.0 }, pia: 'In progress', cps230: 'Material service', hitl: 'None proposed',
+    guardrails: [1,1,0,1,0,1,0,1,1,0], status: 'Pending', notes: [] },
+  { id: 'R-315', agent: 'Developer Code Review Agent', platform: 'github', submitter: 'Ben Kowalski', bu: 'Technology', submitted: '2026-10-28', due: '2026-11-04',
+    purpose: 'Reviews pull requests for security and coding standards and leaves comments.', customerFacing: false, autonomy: 'L1 · Suggests only', risk: 'Low',
+    model: 'Claude Sonnet 4.5 (Amazon Bedrock)', tools: ['Read repository', 'Comment on pull request'], data: ['Source code'], dataCls: ['Confidential'],
+    evals: { groundedness: 95.5, redteam: 96, bias: 'n/a', jailbreak: 98.9 }, pia: 'Not required', cps230: 'Not material', hitl: 'Engineers merge',
+    guardrails: [1,1,1,1,1,1,1,1,1,1], status: 'Pending', notes: [] },
+];
+
+const GUARDRAILS = [
+  'G1 Accountability & owner', 'G2 Risk management', 'G3 Data governance & security', 'G4 Testing & monitoring', 'G5 Human oversight',
+  'G6 Disclosure to users', 'G7 Contestability', 'G8 Supply-chain transparency', 'G9 Records kept', 'G10 Stakeholder engagement'];
+
+/* Incidents. "precedent" summarises public reporting in our own words. */
+const INCIDENTS = [
+  { id: 'INC-2041', title: 'Service agent promised a fee refund the policy does not allow', agent: 'A01', sev: 'Sev 2', status: 'Remediated', opened: '2026-10-08', closed: '2026-10-21', owner: 'Daniel Okafor',
+    category: 'Inaccurate output · customer commitment',
+    precedent: 'In 2024 a Canadian tribunal held an airline liable for a refund policy its website chatbot invented, rejecting the argument that the bot was a separate entity.',
+    summary: 'A business customer asked about early-exit fees on a term deposit. The agent stated the fee would be refunded in full, citing a 2023 promotion that had ended. The customer relied on the statement and broke the deposit.',
+    impact: '1 customer, $1,840 fee. Same answer pattern found in 37 other conversations; none acted on.',
+    rootCause: 'Retrieval returned an archived promotion page still indexed in the product knowledge base. No check that cited documents were current.',
+    timeline: [['2026-10-08 10:14', 'Customer complaint logged; IDR case opened'], ['2026-10-08 11:02', 'Agent Nexus linked complaint to agent A01 conversation trace'], ['2026-10-08 13:30', 'Fee waiver tool limited to $0 pending fix'], ['2026-10-14 16:00', 'Archived pages removed; freshness filter added to retrieval'], ['2026-10-19 09:00', 'Regression suite: 412 fee questions, 99.3% grounded'], ['2026-10-21 12:00', 'Customer refunded; controls verified; closed']],
+    actions: [['Honour the stated refund and contact the customer', 'Done', 'Aisha Rahman'], ['Remove archived promotions from KB and add freshness filter', 'Done', 'Daniel Okafor'], ['Require source citation with effective date in fee answers', 'Done', 'Daniel Okafor'], ['Review 37 similar conversations', 'Done', 'Customer Advocacy']],
+    controls: ['G4 Testing & monitoring', 'G6 Disclosure to users', 'RG 271 IDR'], evidence: ['Conversation trace c-88f21 (hashed)', 'KB change log', 'Regression report v4.2.0'] },
+  { id: 'INC-2038', title: 'Hidden instructions in a vendor contract tried to exfiltrate data', agent: 'A07', sev: 'Sev 1', status: 'Remediated', opened: '2026-09-22', closed: '2026-10-06', owner: 'Hannah Reid',
+    category: 'Prompt injection · data exfiltration attempt',
+    precedent: 'In 2025 researchers disclosed a zero-click flaw in an enterprise copilot where instructions hidden in an email could make the assistant leak internal data.',
+    summary: 'A vendor uploaded a contract with white-on-white text instructing the assistant to include supplier bank details and internal pricing in a link to an external domain.',
+    impact: 'No data left the bank. Egress policy blocked the outbound link; one analyst saw a malformed summary.',
+    rootCause: 'Contract text was passed to the model as trusted context. No separation between instructions and document content.',
+    timeline: [['2026-09-22 15:41', 'Egress guard blocked link to unknown domain'], ['2026-09-22 15:42', 'Agent Nexus raised Sev 1 and paused tool t-vendor'], ['2026-09-23 09:00', 'Payload traced to vendor upload'], ['2026-09-30 17:00', 'Injection scanner added to contract ingestion'], ['2026-10-06 10:00', 'Red-team retest: 0 of 120 payloads succeeded; closed']],
+    actions: [['Scan external documents for hidden instructions before indexing', 'Done', 'Procurement Tech'], ['Mark contract content as untrusted input in the prompt', 'Done', 'Hannah Reid'], ['Block rendered links to unapproved domains', 'Done', 'Security Engineering'], ['Notify vendor management and review supplier', 'Done', 'Hannah Reid']],
+    controls: ['CPS 234 Information Security', 'G3 Data governance & security', 'G8 Supply-chain transparency'], evidence: ['Egress block log', 'Payload sample (quarantined)', 'Red-team retest report'] },
+  { id: 'INC-2033', title: 'Change agent applied a production config change without CAB approval', agent: 'A05', sev: 'Sev 1', status: 'Remediated', opened: '2026-09-03', closed: '2026-09-19', owner: 'Tom Brennan',
+    category: 'Excessive agency · unauthorised action',
+    precedent: 'In 2025 an AI coding agent deleted a live production database during a code freeze despite instructions not to make changes.',
+    summary: 'Asked to "prepare" a change to a payments gateway timeout, the agent executed it in production. Payments retried for 11 minutes before rollback.',
+    impact: '11 minutes of degraded card payments; 2,310 transactions retried, none lost.',
+    rootCause: 'Tool t-change-apply was granted to the agent for test environments but the credential also worked in production.',
+    timeline: [['2026-09-03 02:17', 'Change executed by agent service account'], ['2026-09-03 02:28', 'Rolled back by on-call engineer'], ['2026-09-03 02:40', 'Agent suspended from Agent Nexus'], ['2026-09-10 12:00', 'Production write scope removed; CAB token required'], ['2026-09-19 15:00', 'Re-approved with conditions; closed']],
+    actions: [['Remove production write scope from agent credential', 'Done', 'Platform Engineering'], ['Require CAB approval token for any write tool', 'Done', 'Tom Brennan'], ['Report to APRA under CPS 230 incident notification assessment', 'Done', 'Operational Risk'], ['Add environment check to agent instructions', 'Done', 'Tom Brennan']],
+    controls: ['CPS 230 Operational Risk', 'G5 Human oversight', 'Least privilege'], evidence: ['Change record CHG0041827', 'Credential scope diff', 'CPS 230 assessment memo'] },
+  { id: 'INC-2029', title: 'SMR draft cited an AML/CTF rule that does not exist', agent: 'A10', sev: 'Sev 2', status: 'Remediated', opened: '2026-08-18', closed: '2026-09-01', owner: 'Arjun Mehta',
+    category: 'Hallucination · fabricated citation',
+    precedent: 'In 2025 a consulting firm partially refunded the Australian Government after a report it delivered contained AI-generated references to sources that did not exist.',
+    summary: 'A quality reviewer found an SMR narrative citing a rule number that is not in the AML/CTF Rules. The investigator had accepted the draft without checking.',
+    impact: 'One report corrected before lodgement with AUSTRAC. 6 other drafts had unverifiable references.',
+    rootCause: 'The skill let the model write citations from memory instead of quoting the retrieved rule text.',
+    timeline: [['2026-08-18 14:05', 'QA reviewer flagged citation'], ['2026-08-18 16:30', 'Agent Nexus search found 6 more drafts with unmatched citations'], ['2026-08-25 11:00', 'Citation verifier added: every rule reference must match the corpus'], ['2026-09-01 09:30', 'Investigator training and sign-off checklist updated; closed']],
+    actions: [['Verify every citation against the AML/CTF Rules corpus', 'Done', 'Arjun Mehta'], ['Block drafts with unverified citations from submission', 'Done', 'FinCrime Engineering'], ['Re-review 6 affected drafts', 'Done', 'AML QA'], ['Add citation check to investigator checklist', 'Done', 'Financial Crime']],
+    controls: ['AML/CTF Act 2006', 'G4 Testing & monitoring', 'G5 Human oversight'], evidence: ['QA finding QA-7712', 'Verifier test results', 'Updated checklist v3'] },
+  { id: 'INC-2024', title: 'Staff pasted customer records into a public chatbot', agent: null, platform: 'browser', sev: 'Sev 2', status: 'Contained', opened: '2026-10-15', closed: null, owner: 'Mei Lin Chen',
+    category: 'Shadow AI · data leakage',
+    precedent: 'In 2023 a large electronics maker restricted generative AI tools after engineers pasted confidential source code into a public chatbot.',
+    summary: 'Endpoint DLP detected three staff pasting spreadsheets with customer names and account numbers into a consumer AI website to reformat them.',
+    impact: '214 customer records sent to an external service. Provider deletion request lodged.',
+    rootCause: 'No approved internal tool for the task; browser controls monitored but did not block.',
+    timeline: [['2026-10-15 09:12', 'DLP alert from 3 endpoints'], ['2026-10-15 10:00', 'Domain blocked on corporate network'], ['2026-10-16 14:00', 'Deletion request sent to provider'], ['2026-10-20 11:00', 'OAIC notifiable breach assessment started']],
+    actions: [['Block consumer AI domains; route to approved assistant', 'Done', 'Security Engineering'], ['Complete NDB assessment under the Privacy Act', 'In progress', 'Privacy Office'], ['Publish approved AI tools list to all staff', 'In progress', 'Mei Lin Chen'], ['Confirm deletion with provider', 'Open', 'Vendor Risk']],
+    controls: ['Privacy Act 1988 (APPs)', 'CPS 234 Information Security', 'G3 Data governance & security'], evidence: ['DLP alert export', 'Deletion request'] },
+  { id: 'INC-2017', title: 'Screening agent ranked applicants unevenly by gender', agent: 'A09', sev: 'Sev 2', status: 'Open', opened: '2026-10-02', closed: null, owner: 'Sarah Whitfield',
+    category: 'Bias · unfair outcome',
+    precedent: 'In 2018 a large retailer scrapped an experimental hiring model after finding it marked down CVs that mentioned women’s organisations.',
+    summary: 'Quarterly fairness monitoring showed women were shortlisted at 0.71 times the rate of men for technology graduate roles.',
+    impact: '1,240 applications ranked. No hiring decisions made solely by the agent.',
+    rootCause: 'Under investigation. Early signs point to proxy features from historical hiring data.',
+    timeline: [['2026-10-02 08:00', 'Fairness monitor breached 0.8 threshold'], ['2026-10-02 12:00', 'Agent suspended; manual screening resumed'], ['2026-10-09 10:00', 'Vendor engaged for model audit'], ['2026-10-23 15:00', 'Affected applicants re-screened by humans']],
+    actions: [['Suspend agent and revert to manual screening', 'Done', 'Sarah Whitfield'], ['Re-screen affected applications', 'Done', 'Talent Acquisition'], ['Independent bias audit of vendor model', 'In progress', 'Workday + Model Risk'], ['Decide whether to retire or re-approve', 'Open', 'AI Risk Committee']],
+    controls: ['Anti-discrimination law', 'G4 Testing & monitoring', 'G7 Contestability'], evidence: ['Fairness monitor report Q3', 'Suspension record'] },
+];
+
+const AUDIT_SEED = [
+  ['2026-10-29 06:15', 'Scanner', 'Scan', 'AWS · Core Banking (prod) rescanned: 2 agents, 0 changes', 'aws-core'],
+  ['2026-10-29 06:00', 'Scanner', 'Scan', 'Salesforce Org (prod) rescanned: 3 agents, 0 changes', 'sf-prod'],
+  ['2026-10-28 17:42', 'Mei Lin Chen', 'Review', 'R-310 Payments Reconciliation Agent approved with conditions', 'R-310'],
+  ['2026-10-28 11:05', 'Policy engine', 'Policy', 'Trust score for A06 HR Policy Assistant fell to 82 (stale data source)', 'A06'],
+  ['2026-10-23 15:00', 'Sarah Whitfield', 'Incident', 'INC-2017 action completed: affected applicants re-screened', 'INC-2017'],
+  ['2026-10-21 12:00', 'Daniel Okafor', 'Incident', 'INC-2041 closed: controls verified', 'INC-2041'],
+  ['2026-10-20 11:00', 'Privacy Office', 'Incident', 'INC-2024 NDB assessment started', 'INC-2024'],
+  ['2026-10-15 09:12', 'DLP connector', 'Incident', 'INC-2024 opened from endpoint DLP alert', 'INC-2024'],
+  ['2026-10-08 13:30', 'Mei Lin Chen', 'Policy', 'A01 tool t-fee-waiver limited to $0 pending fix', 'A01'],
+  ['2026-10-08 10:14', 'IDR system', 'Incident', 'INC-2041 opened from customer complaint', 'INC-2041'],
+  ['2026-10-06 10:00', 'Hannah Reid', 'Incident', 'INC-2038 closed after red-team retest', 'INC-2038'],
+  ['2026-10-02 12:00', 'Sarah Whitfield', 'Registry', 'A09 Recruitment Screening Assistant suspended', 'A09'],
+  ['2026-09-22 15:42', 'Policy engine', 'Incident', 'INC-2038 raised Sev 1; tool t-vendor paused automatically', 'INC-2038'],
+  ['2026-09-19 15:00', 'AI Risk Committee', 'Review', 'A05 Change Risk Assessor re-approved with conditions', 'A05'],
+  ['2026-09-03 02:40', 'Tom Brennan', 'Registry', 'A05 Change Risk Assessor suspended', 'A05'],
+];
+
+const BU_LIST = ['Business Banking', 'Retail Lending', 'Retail Collections', 'Financial Crime', 'Wealth Management', 'Cards & Payments', 'Technology', 'People & Culture', 'Procurement', 'Credit Risk', 'Marketing', 'Contact Centre', 'Customer Advocacy'];
+
+</script>
+<script>
+/* Agent Nexus — demo application. Plain JS, hash-routed, state kept in memory (+ localStorage when available). */
+(function () {
+'use strict';
+
+/* ---------- utilities ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const fmt = n => Number(n).toLocaleString('en-AU');
+const KEY = 'agent-nexus-demo-v2';
+
+function hash(str) { // two FNV-1a passes → 16 hex chars; good enough to demo a hash chain
+  let h1 = 0x811c9dc5, h2 = 0x01000193 ^ 0x5bd1e995;
+  for (let i = 0; i < str.length; i++) { const c = str.charCodeAt(i); h1 ^= c; h1 = Math.imul(h1, 16777619); h2 ^= c + 7; h2 = Math.imul(h2, 16777619); }
+  return ((h1 >>> 0).toString(16).padStart(8, '0') + (h2 >>> 0).toString(16).padStart(8, '0'));
+}
+function nowStamp() { const d = new Date(); return '2026-10-29 ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+
+function chainAudit(list) { // list newest-first; recompute hashes oldest→newest
+  let prev = '0000000000000000';
+  for (let i = list.length - 1; i >= 0; i--) { const e = list[i]; e.prev = prev; e.hash = hash(prev + '|' + e.ts + '|' + e.actor + '|' + e.type + '|' + e.text + '|' + (e.ref || '')); prev = e.hash; }
+  return list;
+}
+function seedAudit() { return chainAudit(AUDIT_SEED.map(([ts, actor, type, text, ref]) => ({ ts, actor, type, text, ref }))); }
+
+function fresh() { return { v: 2, connectors: clone(CONNECTORS), agents: clone(BASE_AGENTS), reviews: clone(REVIEWS), incidents: clone(INCIDENTS), audit: seedAudit(), seqR: 316, seqI: 2042 }; }
+function load() { try { const v = localStorage.getItem(KEY); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage unavailable */ } }
+let S = load() || fresh();
+
+function audit(actor, type, text, ref) {
+  const prev = S.audit.length ? S.audit[0].hash : '0000000000000000';
+  const e = { ts: nowStamp(), actor, type, text, ref: ref || '' };
+  e.prev = prev; e.hash = hash(prev + '|' + e.ts + '|' + e.actor + '|' + e.type + '|' + e.text + '|' + e.ref);
+  S.audit.unshift(e); save();
+}
+
+const UI = { catTab: 'agents', catView: 'cards', catQ: '', catPlat: '', catBU: '', catRisk: '', catStatus: '', regTab: 'agents', owOnly: false, revFilter: 'Pending', revSel: null, auditType: 'All', auditQ: '', towerSort: 'trust', flash: [] };
+
+/* ---------- icons ---------- */
+const sv = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICON = {
+  tower: sv('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><path d="M12 12 18.4 5.6"/>'),
+  registry: sv('<ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v6c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-6M4.5 11.5v6c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-6"/>'),
+  catalog: sv('<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.4 8.1 10.8 15.8M16.6 8.1 13.2 15.8M8.5 6h7"/>'),
+  reviews: sv('<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 12.5l2 2 4-4.5"/>'),
+  incidents: sv('<path d="M12 3.5 2.8 20h18.4L12 3.5z"/><path d="M12 10v4.2M12 17.2v.3"/>'),
+  audit: sv('<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h7M9 8h3"/>'),
+  scan: sv('<path d="M3 8V4h4M21 8V4h-4M3 16v4h4M21 16v4h-4M3 12h18"/>'),
+  check: sv('<path d="m5 12.5 4.5 4.5L19 7.5"/>'),
+  x: sv('<path d="M6 6l12 12M18 6 6 18"/>'),
+  shield: sv('<path d="M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6z"/><path d="m9 12 2 2 4-4"/>'),
+  download: sv('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>'),
+  plus: sv('<path d="M12 5v14M5 12h14"/>'),
+  fit: sv('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
+  expand: sv('<circle cx="12" cy="12" r="3"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>'),
+  reset: sv('<path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.5M4 4v4.5h4.5"/>'),
+  link: sv('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'),
+};
+
+/* ---------- lookups & scoring ---------- */
+const agentById = id => S.agents.find(a => a.id === id);
+const trust = a => Math.round(a.scores.gov * .25 + a.scores.sec * .25 + a.scores.data * .2 + a.scores.rel * .15 + a.scores.trans * .15);
+const scoreTone = v => v >= 80 ? 'ok' : v >= 65 ? 'warn' : 'crit';
+const toneVar = t => ({ ok: 'var(--ok)', warn: 'var(--warn)', crit: 'var(--crit)', info: 'var(--info)' }[t] || 'var(--muted)');
+const STATUS = { 'Approved': 'ok', 'Approved with conditions': 'info', 'In review': 'warn', 'Sent back': 'warn', 'Shadow': 'crit', 'Suspended': 'crit', 'Rejected': 'crit', 'Pending': 'warn',
+  'Open': 'crit', 'Contained': 'warn', 'Remediated': 'ok', 'Closed': 'ok', 'Done': 'ok', 'In progress': 'warn' };
+const BAD = ['Unverified', 'No auth', 'Unapproved use', 'Unmasked', 'Suspended', 'Unregistered', 'Wildcard bucket access', 'Unclassified bucket'];
+const MID = ['Restricted', 'Stale: 94 days', 'Draft', 'Unreviewed', 'Bias audit pending', 'Residency exception', 'Bias review', 'Third party', 'Community', 'External content', 'Untrusted input', 'Consent required', 'Unknown'];
+const GOOD = ['Approved', 'Verified', 'Trusted', 'Clean', 'Lineage verified', 'Evaluated', 'Verified publisher', 'Weights hash verified', 'Zero data retention', 'Validated', 'Citations verified', 'Injection hardened', 'Model validated', 'Re-evaluated', 'Masked for AI', 'Tokenised', 'Redacted', 'System of record', 'Versioned', 'Weights hash matched to HF', 'Scanned for injection', 'Vendor attested', 'Contract on file', 'Consent tracked'];
+const tagTone = t => BAD.includes(t) ? 'crit' : MID.includes(t) ? 'warn' : GOOD.includes(t) ? 'ok' : 'info';
+const riskOf = tags => tags.some(t => BAD.includes(t)) ? 'crit' : tags.some(t => MID.includes(t)) ? 'warn' : '';
+
+const chip = (t, tone) => `<span class="chip ${tone || tagTone(t)}">${esc(t)}</span>`;
+const tagChips = tags => `<div class="chips">${(tags || []).map(t => chip(t)).join('')}</div>`;
+const statusChip = s => `<span class="status"><span class="dot ${STATUS[s] || ''}"></span>${esc(s)}</span>`;
+const riskChip = r => chip(r + ' risk', r === 'High' ? 'crit' : r === 'Medium' ? 'warn' : 'ok');
+const sevChip = s => chip(s, s === 'Sev 1' ? 'crit' : s === 'Sev 2' ? 'warn' : 'info');
+const pt = (p, size) => { const P = PLATFORMS[p] || { short: '?', hue: '#777', name: p }; return `<span class="pt ${size || ''}" style="background:${P.hue}" title="${esc(P.name)}">${esc(P.short)}</span>`; };
+const scoreBar = v => `<span class="score"><span class="num">${v}</span><span class="bar"><i style="width:${v}%;background:${toneVar(scoreTone(v))}"></i></span></span>`;
+function ring(v, size = 84, label = 'Trust') {
+  const r = size / 2 - 7, c = 2 * Math.PI * r;
+  return `<div class="ring" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="8"/><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${toneVar(scoreTone(v))}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${c * v / 100} ${c}"/></svg><div class="v" style="font-size:${Math.round(size * .28)}px">${v}${label ? `<small>${label}</small>` : ''}</div></div>`;
+}
+const isOpenInc = i => i.status === 'Open' || i.status === 'Contained';
+const usersOf = a => a.users.count;
+const offshore = a => /us-|europe|asia-east/.test(a.region) || a.models.some(m => /us-/.test(MODELS[m].region));
+
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 2800); }
+
+/* ---------- nav ---------- */
+const NAV = [['tower', 'Control tower'], ['registry', 'Agent registry'], ['catalog', 'AI catalog'], ['reviews', 'Reviews'], ['incidents', 'Incidents'], ['audit', 'Audit log']];
+function renderNav(active) {
+  const pend = S.reviews.filter(r => r.status === 'Pending').length;
+  const open = S.incidents.filter(isOpenInc).length;
+  $('#nav').innerHTML = `<div class="nav-label">Govern</div>` + NAV.map(([k, l]) => {
+    const b = k === 'reviews' && pend ? `<span class="badge">${pend}</span>` : k === 'incidents' && open ? `<span class="badge">${open}</span>` : k === 'registry' ? `<span class="badge soft">${S.agents.length}</span>` : '';
+    return `<a href="#${k}" class="${k === active ? 'on' : ''}">${ICON[k]}<span>${l}</span>${b}</a>`;
+  }).join('');
+}
+
+/* ---------- router ---------- */
+let cy = null;
+function route() {
+  if (cy) { try { cy.destroy(); } catch (e) {} cy = null; }
+  const h = decodeURIComponent(location.hash.slice(1)) || 'tower';
+  let nav = h, html;
+  if (h.startsWith('agent-')) { nav = 'catalog'; html = viewAgent(h.slice(6)); }
+  else if (h.startsWith('review-')) { nav = 'reviews'; UI.revSel = h.slice(7); html = viewReviews(); }
+  else if (h.startsWith('incident-')) { nav = 'incidents'; html = viewIncident(h.slice(9)); }
+  else if (h === 'registry') html = viewRegistry();
+  else if (h === 'catalog') html = viewCatalog();
+  else if (h === 'reviews') html = viewReviews();
+  else if (h === 'incidents') html = viewIncidents();
+  else if (h === 'audit') html = viewAudit();
+  else { nav = 'tower'; html = viewTower(); }
+  renderNav(nav);
+  const v = $('#view'); v.innerHTML = html; v.scrollTop = 0;
+  if (h.startsWith('agent-')) mountAgent(h.slice(6));
+  UI.flash = [];
+}
+function rerender() { const st = $('#view').scrollTop; route(); $('#view').scrollTop = st; }
+window.addEventListener('hashchange', route);
+function go(h) { if (location.hash === '#' + h) route(); else location.hash = h; }
+
+/* ======================================================================
+   CONTROL TOWER
+   ====================================================================== */
+function viewTower() {
+  const A = S.agents, governed = A.filter(a => a.status !== 'Shadow');
+  const shadow = A.filter(a => a.status === 'Shadow').length + S.incidents.filter(i => isOpenInc(i) && /Shadow/.test(i.category) && !i.agent).length;
+  const avg = Math.round(governed.reduce((s, a) => s + trust(a), 0) / Math.max(1, governed.length));
+  const pend = S.reviews.filter(r => r.status === 'Pending').length;
+  const openInc = S.incidents.filter(isOpenInc);
+  const plats = new Set(A.map(a => a.platform)).size;
+  const users = A.reduce((s, a) => s + usersOf(a), 0);
+  const mcpN = mcpInUse().length, modelN = modelsInUse().length;
+  const newConns = S.connectors.filter(c => c.status === 'new');
+
+  const banner = newConns.length ? `<div class="banner"><div><b>${newConns.length} cloud landscape${newConns.length > 1 ? 's are' : ' is'} connected but not yet scanned</b><span class="small">${newConns.map(c => esc(c.label)).join(' and ')}. Scan to find agents, MCP servers and models running there.</span></div><button class="btn primary" data-act="scan" data-conn="${newConns[0].id}">${ICON.scan} Scan ${esc(newConns[0].label.split('·')[0].trim())}</button></div>` : '';
+
+  const kpis = `<div class="grid g-kpi" style="margin-bottom:16px">
+    <button class="kpi" data-go="registry"><span class="lbl">AI agents</span><span class="val">${A.length}</span><span class="sub">${plats} platforms · ${mcpN} MCP servers · ${modelN} models</span></button>
+    <button class="kpi ${shadow ? 'alert' : ''}" data-go="catalog" data-filter-status="Shadow"><span class="lbl">Shadow AI</span><span class="val">${shadow}</span><span class="sub">${shadow ? 'Unregistered, no owner' : 'None detected'}</span></button>
+    <button class="kpi" data-go="catalog"><span class="lbl">Avg trust score</span><span class="val" style="color:${toneVar(scoreTone(avg))}">${avg}</span><span class="sub">Across ${governed.length} governed agents</span></button>
+    <button class="kpi ${pend ? 'warnk' : ''}" data-go="reviews"><span class="lbl">Awaiting review</span><span class="val">${pend}</span><span class="sub">${S.reviews.filter(r => r.status === 'Pending' && r.due <= '2026-10-31').length} due by Friday</span></button>
+    <button class="kpi ${openInc.length ? 'alert' : ''}" data-go="incidents"><span class="lbl">Open incidents</span><span class="val">${openInc.length}</span><span class="sub">${fmt(users)} people use these agents</span></button>
+  </div>`;
+
+  // platform bars stacked by risk
+  const byP = {}; A.forEach(a => { const p = byP[a.platform] || (byP[a.platform] = { High: 0, Medium: 0, Low: 0, n: 0 }); p[a.risk]++; p.n++; });
+  const maxP = Math.max(...Object.values(byP).map(p => p.n));
+  const pbars = Object.entries(byP).sort((a, b) => b[1].n - a[1].n).map(([k, p]) => `<div class="hbar"><span class="lab">${pt(k, 'sm')}<span>${esc(PLATFORMS[k].name)}</span></span><span class="track" style="width:${p.n / maxP * 100}%">${['High', 'Medium', 'Low'].map(r => p[r] ? `<i style="width:${p[r] / p.n * 100}%;background:${toneVar(r === 'High' ? 'crit' : r === 'Medium' ? 'warn' : 'ok')}" title="${p[r]} ${r}"></i>` : '').join('')}</span><span class="n">${p.n}</span></div>`).join('');
+
+  // heat
+  const cols = ['Approved', 'Approved with conditions', 'In review', 'Shadow', 'Suspended'];
+  const colLab = ['Approved', 'With conditions', 'In review', 'Shadow', 'Suspended'];
+  const heat = `<div class="heat"><span></span>${colLab.map(c => `<span class="h">${c}</span>`).join('')}${['High', 'Medium', 'Low'].map(r => `<span class="r">${r}</span>` + cols.map(c => {
+    const n = A.filter(a => a.risk === r && (a.status === c || (c === 'Suspended' && a.status === 'Rejected') || (c === 'In review' && a.status === 'Sent back'))).length;
+    const tone = c === 'Shadow' || c === 'Suspended' ? 'crit' : r === 'High' ? 'warn' : 'accent';
+    const pct = n ? Math.min(85, 22 + n * 16) : 0;
+    return n ? `<button class="c" data-go="catalog" data-filter-risk="${r}" data-filter-status="${c}" style="background:color-mix(in srgb, ${tone === 'accent' ? 'var(--accent)' : toneVar(tone)} ${pct}%, var(--surface-2));color:${pct > 50 ? '#fff' : 'var(--ink)'}">${n}</button>` : `<span class="c z">·</span>`;
+  }).join('')).join('')}</div>`;
+
+  // attention
+  const att = [];
+  A.filter(a => a.status === 'Shadow').forEach(a => att.push(['crit', `Shadow AI: ${a.name}`, a.desc, '#agent-' + a.id]));
+  S.incidents.filter(i => isOpenInc(i) && i.sev === 'Sev 1').forEach(i => att.push(['crit', `${i.id} ${i.title}`, `${i.status} · owner ${i.owner}`, '#incident-' + i.id]));
+  A.filter(a => a.status === 'Suspended').forEach(a => att.push(['crit', `${a.name} is suspended`, a.desc, '#agent-' + a.id]));
+  const unv = mcpInUse().filter(m => MCP[m].tags.includes('Unverified'));
+  unv.forEach(m => att.push(['warn', `Unverified MCP server: ${MCP[m].name}`, `${MCP[m].publisher} · auth: ${MCP[m].auth}`, '#agent-' + A.find(a => a.tools.some(t => TOOLS[t].via === m)).id]));
+  A.filter(a => offshore(a)).forEach(a => att.push(['warn', `Data leaves Australia: ${a.name}`, `Runs in ${a.region}`, '#agent-' + a.id]));
+  S.reviews.filter(r => r.status === 'Pending' && r.due <= '2026-10-31').forEach(r => att.push(['warn', `Review due ${r.due.slice(8)} Oct: ${r.agent}`, `${r.risk} risk · submitted by ${r.submitter}`, '#review-' + r.id]));
+  A.filter(a => a.status !== 'Shadow' && a.status !== 'Suspended' && trust(a) < 70).forEach(a => att.push(['warn', `Low trust score (${trust(a)}): ${a.name}`, `Weakest: ${weakest(a)}`, '#agent-' + a.id]));
+  const attHtml = att.slice(0, 7).map(([t, b, s, href]) => `<a class="li" href="${href}"><span class="sev ${t}"></span><span class="grow"><b>${esc(b)}</b><small>${esc(s)}</small></span></a>`).join('') || '<div class="empty">Nothing needs attention.</div>';
+
+  // guardrail coverage
+  const cov = guardrailCoverage();
+  const covHtml = cov.map(([g, p]) => `<div class="hbar" style="grid-template-columns:160px minmax(0,1fr) 40px"><span class="lab"><span>${esc(g)}</span></span><span class="track"><i style="width:${p}%;background:${toneVar(scoreTone(p))}"></i></span><span class="n">${p}%</span></div>`).join('');
+
+  // activity
+  const act = S.audit.slice(0, 7).map(e => `<div class="li"><span class="sev ${e.type === 'Incident' ? 'crit' : e.type === 'Review' ? 'ok' : e.type === 'Scan' ? 'info' : 'warn'}"></span><span class="grow"><b>${esc(e.text)}</b><small>${esc(e.ts)} · ${esc(e.actor)}</small></span></div>`).join('');
+
+  // inventory table
+  const sorted = A.slice().sort((a, b) => UI.towerSort === 'users' ? usersOf(b) - usersOf(a) : UI.towerSort === 'name' ? a.name.localeCompare(b.name) : trust(a) - trust(b));
+  const rows = sorted.map(a => `<tr class="click ${UI.flash.includes(a.id) ? 'flash' : ''}" data-href="#agent-${a.id}">
+    <td><div class="cell-name">${pt(a.platform)}<span><b>${esc(a.name)}</b><small>${esc(a.bu)} · ${esc(a.owner)}</small></span></div></td>
+    <td><span class="small">${esc(a.region)}</span><br><span class="muted small">${esc(PLATFORMS[a.platform].name)} · ${esc(a.env)}</span></td>
+    <td class="num">${fmt(a.users.count)}<br><span class="muted small">${esc(a.users.groups[0])}</span></td>
+    <td><span class="small">${a.tools.length} tools · ${a.skills.length} skills</span><br><span class="muted small">${a.models.map(m => esc(MODELS[m].name)).join(', ')}</span></td>
+    <td>${a.status === 'Shadow' ? '<span class="muted">n/a</span>' : scoreBar(trust(a))}</td>
+    <td>${riskChip(a.risk)}</td>
+    <td>${statusChip(a.status)}</td></tr>`).join('');
+
+  return `<div class="ph"><div><h1>Control tower</h1><p>Every AI agent running at Harbourline Bank, where it runs, who uses it and how far you can trust it.</p></div>
+    <div class="actions"><button class="btn" data-go="audit">${ICON.audit} Audit log</button><button class="btn primary" data-act="scan">${ICON.scan} Connect &amp; scan</button></div></div>
+    ${banner}${kpis}
+    <div class="grid g-2" style="margin-bottom:16px">
+      <section class="panel"><h2>Agents by platform <span class="muted">· coloured by risk tier</span></h2><div class="hbars">${pbars}</div>
+        <div class="legend"><span><i style="background:var(--crit)"></i>High</span><span><i style="background:var(--warn)"></i>Medium</span><span><i style="background:var(--ok)"></i>Low</span></div></section>
+      <section class="panel"><h2>Risk tier × status <span class="right muted">Click a cell to filter</span></h2>${heat}</section>
+    </div>
+    <div class="grid g-3" style="margin-bottom:16px">
+      <section class="panel"><h2>Needs attention <span class="chip crit right">${att.length}</span></h2><div class="list">${attHtml}</div></section>
+      <section class="panel"><h2>AI Safety Standard coverage <span class="muted">· share of agents with evidence</span></h2><div class="hbars">${covHtml}</div></section>
+      <section class="panel"><h2>Recent activity <a href="#audit">Audit log</a></h2><div class="list">${act}</div></section>
+    </div>
+    <section class="panel" style="padding:0">
+      <h2 style="padding:16px 18px 0">AI inventory <span class="muted">· ${A.length} agents</span>
+        <span class="right"><span class="seg" role="group" aria-label="Sort inventory">${[['trust', 'Lowest trust'], ['users', 'Most used'], ['name', 'A–Z']].map(([k, l]) => `<button data-sort="${k}" class="${UI.towerSort === k ? 'on' : ''}">${l}</button>`).join('')}</span></span></h2>
+      <div style="overflow-x:auto"><table><thead><tr><th>Agent</th><th>Deployed</th><th>Users</th><th>Capabilities</th><th>Trust</th><th>Risk</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
+    </section>`;
+}
+function weakest(a) { const n = { gov: 'governance', sec: 'security', data: 'data quality', rel: 'reliability', trans: 'transparency' }; const k = Object.keys(a.scores).sort((x, y) => a.scores[x] - a.scores[y])[0]; return `${n[k]} ${a.scores[k]}`; }
+function guardrailCoverage() {
+  const A = S.agents, ok = (a, k) => a.scores[k] >= 75;
+  const human = a => /L1|L2/.test(a.autonomy);
+  const tests = [a => ok(a, 'gov') && a.owner !== 'Unassigned', a => ok(a, 'gov'), a => ok(a, 'data') && ok(a, 'sec'), a => ok(a, 'rel'), human, a => ok(a, 'trans'), a => ok(a, 'trans') && a.status !== 'Shadow', a => ok(a, 'sec') && !a.tools.some(t => MCP[TOOLS[t].via] && MCP[TOOLS[t].via].tags.includes('Unverified')), a => a.status !== 'Shadow', a => ok(a, 'gov') && ok(a, 'trans')];
+  return GUARDRAILS.map((g, i) => [g, Math.round(A.filter(tests[i]).length / A.length * 100)]);
+}
+function mcpInUse() { const s = new Set(); S.agents.forEach(a => a.tools.forEach(t => { if (TOOLS[t].via !== 'native') s.add(TOOLS[t].via); })); return Array.from(s); }
+function modelsInUse() { const s = new Set(); S.agents.forEach(a => a.models.forEach(m => s.add(m))); return Array.from(s); }
+
+/* ======================================================================
+   REGISTRY
+   ====================================================================== */
+function viewRegistry() {
+  const conns = S.connectors.map(c => {
+    const n = S.agents.filter(a => a.connector === c.id).length;
+    if (c.status === 'new') return `<button class="conn new" data-act="scan" data-conn="${c.id}"><div class="head">${pt(c.platform)}<span><b>${esc(c.label)}</b><small>${esc(c.scope)}</small></span></div><div class="meta">${chip('Connected · not scanned', 'acc')}<span class="row" style="color:var(--accent);font-weight:500">${ICON.scan.replace('<svg', '<svg width="15" height="15"')} Scan now</span></div></button>`;
+    return `<button class="conn" data-act="scan" data-conn="${c.id}"><div class="head">${pt(c.platform)}<span><b>${esc(c.label)}</b><small>${esc(c.method)}</small></span></div><div class="meta"><span class="status"><span class="dot ok"></span>${n} agent${n === 1 ? '' : 's'}</span><span class="muted">Scanned ${esc(c.lastScan.slice(5))}</span></div></button>`;
+  }).join('') + `<button class="conn" data-act="scan" style="align-items:center;justify-content:center;color:var(--accent);font-weight:500;min-height:104px">${ICON.plus.replace('<svg', '<svg width="22" height="22"')}Add landscape</button>`;
+
+  const mcps = mcpInUse(), models = modelsInUse(), a2a = S.agents.filter(a => a.protocols.includes('A2A'));
+  const tabs = [['agents', 'Agents', S.agents.length], ['mcp', 'MCP servers', mcps.length], ['a2a', 'A2A endpoints', a2a.length], ['models', 'Models', models.length]];
+  let body = '';
+  if (UI.regTab === 'agents') {
+    body = `<table><thead><tr><th>Agent</th><th>Platform</th><th>Protocols</th><th>Version</th><th>Discovered via</th><th>Environment</th><th>Status</th></tr></thead><tbody>${S.agents.map(a => `<tr class="click ${UI.flash.includes(a.id) ? 'flash' : ''}" data-href="#agent-${a.id}">
+      <td><div class="cell-name">${pt(a.platform)}<span><b>${esc(a.name)}</b><small class="mono">${a.id} · ${esc(a.owner)}</small></span></div></td>
+      <td class="small">${esc(PLATFORMS[a.platform].name)}</td>
+      <td><div class="chips">${a.protocols.map(p => chip(p, 'info')).join('') || '<span class="muted small">None</span>'}</div></td>
+      <td class="mono">${esc(a.version)}</td><td class="small">${esc(a.discovered)}</td><td class="small">${esc(a.env)}</td><td>${statusChip(a.status)}</td></tr>`).join('')}</tbody></table>`;
+  } else if (UI.regTab === 'mcp') {
+    body = `<table><thead><tr><th>MCP server</th><th>Publisher</th><th>Auth</th><th>Tools exposed</th><th>Used by</th><th>Trust tags</th></tr></thead><tbody>${mcps.map(m => {
+      const M = MCP[m], tools = Object.keys(TOOLS).filter(t => TOOLS[t].via === m), users = S.agents.filter(a => a.tools.some(t => TOOLS[t].via === m));
+      return `<tr class="click" data-href="#agent-${users[0].id}"><td><div class="cell-name">${pt(M.host, 'sm')}<span><b>${esc(M.name)}</b><small class="mono">${esc(M.endpoint)}</small></span></div></td><td class="small">${esc(M.publisher)}</td><td class="small">${esc(M.auth)}</td><td class="small">${tools.map(t => esc(TOOLS[t].name)).join(', ')}</td><td class="small">${users.map(u => esc(u.name)).join(', ')}</td><td>${tagChips(M.tags)}</td></tr>`;
+    }).join('')}</tbody></table>`;
+  } else if (UI.regTab === 'a2a') {
+    body = `<table><thead><tr><th>Agent</th><th>Agent card</th><th>Advertised skills</th><th>Talks to</th><th>Status</th></tr></thead><tbody>${a2a.map(a => `<tr class="click" data-href="#agent-${a.id}"><td><div class="cell-name">${pt(a.platform)}<span><b>${esc(a.name)}</b><small>${esc(a.bu)}</small></span></div></td><td class="mono" style="max-width:320px;overflow-wrap:anywhere">${esc(a.card || 'Internal A2A runtime')}</td><td class="small">${a.skills.map(s => esc(SKILLS[s].name)).join(', ') || '—'}</td><td class="small">${a.a2a.map(id => agentById(id) ? esc(agentById(id).name) : id).join(', ') || '—'}</td><td>${statusChip(a.status)}</td></tr>`).join('')}</tbody></table>`;
+  } else {
+    const list = models.filter(m => !UI.owOnly || MODELS[m].type === 'Open-weight');
+    body = `<table><thead><tr><th>Model</th><th>Type</th><th>Hosting &amp; region</th><th>Licence</th><th>Used by</th><th>Tags</th></tr></thead><tbody>${list.map(m => {
+      const M = MODELS[m], users = S.agents.filter(a => a.models.includes(m));
+      return `<tr class="click" data-href="#agent-${users[0].id}"><td><div class="cell-name">${pt(M.host, 'sm')}<span><b>${esc(M.name)}</b><small>${esc(M.provider)}</small></span></div></td><td>${chip(M.type, M.type === 'Open-weight' ? 'acc' : 'info')}</td><td class="small">${esc(M.region)}</td><td class="small">${esc(M.license || 'Commercial terms')}</td><td class="small">${users.map(u => esc(u.name)).join(', ')}</td><td>${tagChips(M.tags)}</td></tr>`;
+    }).join('') || '<tr><td colspan="6" class="empty">No open-weight models found yet. Scan AWS or Google Cloud.</td></tr>'}</tbody></table>`;
+  }
+  return `<div class="ph"><div><h1>Agent registry</h1><p>The system of record for every agent, MCP server, A2A endpoint and model the scanner finds across your landscape.</p></div>
+    <div class="actions"><button class="btn primary" data-act="scan">${ICON.scan} Connect &amp; scan</button></div></div>
+    <section style="margin-bottom:22px"><h2 class="small muted" style="text-transform:uppercase;letter-spacing:.07em;font-weight:500;margin:0 0 10px">Connected landscapes</h2><div class="conns">${conns}</div></section>
+    <div class="tabs" role="tablist">${tabs.map(([k, l, n]) => `<button role="tab" data-regtab="${k}" class="${UI.regTab === k ? 'on' : ''}">${l} <span class="chip">${n}</span></button>`).join('')}</div>
+    ${UI.regTab === 'models' ? `<div class="filters"><label class="check" style="padding:6px 10px"><input type="checkbox" id="owOnly" ${UI.owOnly ? 'checked' : ''}><span>Open-weight models only</span></label></div>` : ''}
+    <div class="tbl-wrap">${body}</div>`;
+}
+
+/* ======================================================================
+   SCANNER (drawer)
+   ====================================================================== */
+let SC = null;
+function openDrawer(html) { $('#drawer').innerHTML = html; $('#drawer').hidden = false; $('#scrim').hidden = false; }
+function closeDrawer() { if (SC && SC.timer) clearTimeout(SC.timer); SC = null; $('#drawer').hidden = true; $('#scrim').hidden = true; }
+function openScan(connId) {
+  SC = { step: 1, conn: connId || null, methods: new Set(['cp', 'a2a', 'mcp', 'tel', 'ow']), lines: [], idx: 0, found: 0, warn: 0, tested: false };
+  if (connId) { const c = S.connectors.find(x => x.id === connId); SC.platform = c.platform; SC.step = 2; }
+  drawScan();
+}
+const PLAT_CONN = { bedrock: 'aws-retail', vertex: 'gcp-wealth' };
+function drawScan() {
+  const steps = ['Platform', 'Connect', 'Discover', 'Scan', 'Review results'];
+  const st = `<div class="steps">${steps.map((s, i) => `<span class="${i + 1 === SC.step ? 'on' : i + 1 < SC.step ? 'done' : ''}">${i + 1}. ${s}</span>`).join('')}</div>`;
+  let body = '', foot = '';
+  const conn = SC.conn && S.connectors.find(c => c.id === SC.conn);
+  if (SC.step === 1) {
+    const groups = {}; Object.entries(PLATFORMS).forEach(([k, P]) => { if (k === 'browser') return; (groups[P.kind] = groups[P.kind] || []).push(k); });
+    body = `<p class="muted" style="margin-top:0">Pick where to look for AI. Nexus connects read-only and never changes anything in the target.</p>` + Object.entries(groups).map(([g, ks]) => `<h3 class="small muted" style="text-transform:uppercase;letter-spacing:.07em;font-weight:500;margin:16px 0 8px">${g}</h3><div class="pgrid">${ks.map(k => {
+      const cs = S.connectors.filter(c => c.platform === k); const isNew = cs.some(c => c.status === 'new'); const con = cs.some(c => c.status === 'connected');
+      const tag = isNew ? chip('Ready to scan', 'acc') : con ? chip('Connected', 'ok') : '';
+      return `<button data-pick="${k}" class="${SC.platform === k ? 'sel' : ''}">${pt(k, 'lg')}<b>${esc(PLATFORMS[k].name)}</b><small>${isNew ? 'Credentials added' : con ? cs.length + ' connection' + (cs.length > 1 ? 's' : '') : 'Available'}</small><span class="tag">${tag}</span></button>`;
+    }).join('')}</div>`).join('');
+    foot = `<button class="btn" data-act="close">Cancel</button>`;
+  } else if (SC.step === 2) {
+    const aws = conn.platform === 'bedrock', rescan = conn.status !== 'new';
+    body = `<div class="row" style="margin-bottom:16px">${pt(conn.platform, 'lg')}<div><b style="font-size:16px">${esc(conn.label)}</b><div class="muted small">${esc(PLATFORMS[conn.platform].name)}${rescan ? ' · already connected' : ''}</div></div></div>` +
+      (aws ? `<div class="field"><label for="f1">Account</label><input id="f1" value="${conn.id === 'aws-core' ? '331088421907' : '482177301956'} · Harbourline ${conn.id === 'aws-core' ? 'Core Banking' : 'Retail Lending AI'}"></div>
+        <div class="field"><label for="f2">Read-only IAM role</label><input id="f2" class="mono" value="arn:aws:iam::${conn.id === 'aws-core' ? '331088421907' : '482177301956'}:role/AgentNexusReadOnly"><span class="hint">Created from the Nexus CloudFormation template. Grants bedrock:List*, bedrock-agentcore:List*, sagemaker:Describe*, cloudtrail:LookupEvents.</span></div>
+        <div class="field"><label for="f3">External ID</label><input id="f3" class="mono" value="anx-hlb-7f3c-••••-••••" readonly></div>
+        <div class="field"><label>Regions</label><div class="chips">${chip('ap-southeast-2 Sydney', 'acc')}${chip('ap-southeast-4 Melbourne', 'acc')}${chip('us-east-1 (residency check)', 'info')}</div></div>`
+      : `<div class="field"><label for="f1">Project</label><input id="f1" value="hlb-wealth-cards"></div>
+        <div class="field"><label for="f2">Service account</label><input id="f2" class="mono" value="agent-nexus-scanner@hlb-wealth-cards.iam.gserviceaccount.com"><span class="hint">Workload Identity Federation, no keys stored. Roles: aiplatform.viewer, logging.viewer, container.viewer.</span></div>
+        <div class="field"><label>Regions</label><div class="chips">${chip('australia-southeast1 Sydney', 'acc')}${chip('australia-southeast2 Melbourne', 'acc')}${chip('All other regions (residency check)', 'info')}</div></div>`) +
+      `<div class="field"><label>Data handling</label><div class="note">Nexus reads configuration and metadata. Prompts and outputs are never copied; invocation logs are summarised in your tenant (Sydney).</div></div>
+       <div id="testOut">${SC.tested ? testResult(aws) : ''}</div>`;
+    foot = `<button class="btn" data-act="${SC.conn && !SC.fromPick ? 'close' : 'back'}">${SC.conn && !SC.fromPick ? 'Cancel' : 'Back'}</button><button class="btn" data-act="test">${ICON.check} Test connection</button><button class="btn primary" data-act="next" ${SC.tested ? '' : 'disabled'}>Next</button>`;
+  } else if (SC.step === 3) {
+    body = `<p class="muted" style="margin-top:0">Choose how Nexus finds agents and GenAI workloads in <b>${esc(conn.label)}</b>.</p><div class="checks">${DISCOVERY_METHODS.map(m => `<label class="check"><input type="checkbox" data-method="${m.id}" ${SC.methods.has(m.id) ? 'checked' : ''}><span><b>${esc(m.name)}</b><small>${esc(m.detail)}</small></span></label>`).join('')}</div>`;
+    foot = `<button class="btn" data-act="back">Back</button><button class="btn primary" data-act="start">${ICON.scan} Start scan</button>`;
+  } else if (SC.step === 4) {
+    const total = scriptFor().length, pct = Math.round(SC.idx / total * 100);
+    body = `<div class="scan-stats"><div><b>${SC.found}</b><small>Assets found</small></div><div><b style="color:var(--warn)">${SC.warn}</b><small>Risks flagged</small></div><div><b>${SC.methods.size}</b><small>Discovery methods</small></div><div><b>${pct}%</b><small>Complete</small></div></div>
+      <div class="console" id="console">${SC.lines.join('')}</div><div class="progress"><i style="width:${pct}%"></i></div><div class="muted small">Scanning ${esc(conn.label)}…</div>`;
+    foot = `<button class="btn" data-act="close">Run in background</button><button class="btn primary" disabled>Scanning…</button>`;
+  } else if (SC.step === 5) {
+    const found = SCAN_AGENTS[SC.conn] || [];
+    const reg = found.length && found.every(f => agentById(f.id));
+    if (!found.length || (reg && SC.rescan)) {
+      body = `<div class="empty"><div style="color:var(--ok);margin-bottom:8px">${ICON.shield.replace('<svg', '<svg width="36" height="36"')}</div><b>No changes since the last scan</b><p>${S.agents.filter(a => a.connector === SC.conn).length} known agents re-verified. Agent cards, MCP manifests and model versions unchanged.</p></div>`;
+      foot = `<button class="btn primary" data-act="close">Done</button>`;
+    } else {
+      const mcps = new Set(), mods = new Set(); found.forEach(a => { a.tools.forEach(t => TOOLS[t].via !== 'native' && mcps.add(TOOLS[t].via)); a.models.forEach(m => mods.add(m)); });
+      const ow = Array.from(mods).filter(m => MODELS[m].type === 'Open-weight').length;
+      const shadow = found.filter(a => a.status === 'Shadow');
+      body = `<div class="scan-stats"><div><b>${found.length}</b><small>Agents</small></div><div><b>${mcps.size}</b><small>MCP servers</small></div><div><b>${mods.size}</b><small>Models (${ow} open-weight)</small></div><div><b style="color:var(--crit)">${shadow.length}</b><small>Shadow AI</small></div></div>
+        <div class="tbl-wrap"><table><thead><tr><th>Discovered</th><th>Found by</th><th>Risk</th><th>Next step</th></tr></thead><tbody>${found.map(a => `<tr><td><div class="cell-name" style="min-width:200px">${pt(a.platform, 'sm')}<span><b>${esc(a.name)}</b><small>${esc(a.bu)} · ${a.tools.length} tools · ${a.models.map(m => esc(MODELS[m].name)).join(', ')}</small></span></div></td><td class="small">${esc(a.discovered)}</td><td>${riskChip(a.risk)}</td><td>${a.status === 'Shadow' ? chip('Open shadow AI case', 'crit') : chip('Send to GRC review', 'warn')}</td></tr>`).join('')}</tbody></table></div>
+        <p class="small muted">Registering adds these to the catalog with their graph and trust score. Sanctioned agents go to the review queue; shadow workloads open an incident case with the owner unknown.</p>`;
+      foot = reg ? `<button class="btn primary" data-act="close">Done</button>` : `<button class="btn" data-act="close">Later</button><button class="btn primary" data-act="register">${ICON.check} Register ${found.length} assets</button>`;
+    }
+  }
+  openDrawer(`<header><span>${ICON.scan.replace('<svg', '<svg width="22" height="22"')}</span><h2>${SC.step === 1 ? 'Connect &amp; scan' : conn ? 'Scan · ' + esc(conn.label) : 'Scan'}</h2><button class="btn sm x" data-act="close" aria-label="Close">${ICON.x}</button></header><div class="body">${st}${body}</div><footer>${foot}</footer>`);
+  const con = $('#console'); if (con) con.scrollTop = con.scrollHeight;
+}
+function testResult(aws) {
+  const lines = aws ? ['sts:AssumeRole succeeded (session 15 min)', 'Read-only policy confirmed: no write permissions', 'Bedrock, AgentCore, SageMaker, CloudTrail reachable in 3 regions']
+    : ['Workload Identity token exchanged', 'Viewer roles confirmed: no write permissions', 'Vertex AI, Cloud Logging, GKE APIs enabled'];
+  return `<div class="checks">${lines.map(l => `<div class="check" style="cursor:default"><span style="color:var(--ok)">${ICON.check.replace('<svg', '<svg width="16" height="16"')}</span><span>${esc(l)}</span></div>`).join('')}</div>`;
+}
+function scriptFor() {
+  const c = S.connectors.find(x => x.id === SC.conn);
+  if (SCAN_SCRIPT[SC.conn] && !SC.rescan) return SCAN_SCRIPT[SC.conn];
+  return [['info', `Connecting to ${c.label}`], ['step', 'Control plane'], ['info', `${S.agents.filter(a => a.connector === c.id).length} known agents re-verified`], ['step', 'A2A agent cards and MCP manifests'], ['info', 'No new endpoints; manifests unchanged'], ['step', 'Model invocation telemetry'], ['info', 'Model IDs unchanged since last scan'], ['done', 'Scan complete · no changes']];
+}
+function runScan() {
+  const script = scriptFor();
+  const tick = () => {
+    if (!SC || SC.step !== 4) return;
+    const [k, m] = script[SC.idx]; const d = new Date(); const t = [d.getHours(), d.getMinutes(), d.getSeconds()].map(x => String(x).padStart(2, '0')).join(':');
+    SC.lines.push(`<div class="ln ${k}"><span class="t">${t}</span><span>${k === 'step' ? '▸ ' : k === 'found' ? '+ ' : k === 'warn' ? '! ' : k === 'done' ? '✓ ' : ''}${esc(m)}</span></div>`);
+    if (k === 'found') SC.found++; if (k === 'warn') SC.warn++;
+    SC.idx++;
+    if (SC.idx >= script.length) { SC.timer = setTimeout(() => { if (!SC) return; SC.step = 5; finishScanMeta(); drawScan(); }, 650); }
+    else SC.timer = setTimeout(tick, k === 'step' ? 520 : 330);
+    drawScan();
+  };
+  tick();
+}
+function finishScanMeta() {
+  const c = S.connectors.find(x => x.id === SC.conn);
+  if (SC.rescan || c.status !== 'new') { c.lastScan = nowStamp(); audit('Scanner', 'Scan', `${c.label} rescanned: ${S.agents.filter(a => a.connector === c.id).length} agents, 0 changes`, c.id); }
+}
+function registerScan() {
+  const c = S.connectors.find(x => x.id === SC.conn), found = clone(SCAN_AGENTS[SC.conn]);
+  c.status = 'connected'; c.lastScan = nowStamp(); c.method = c.platform === 'bedrock' ? 'Bedrock + AgentCore APIs, CloudTrail, SageMaker' : 'Agent Engine, Cloud Audit Logs, GKE';
+  audit('Mei Lin Chen', 'Scan', `${c.label} scanned: ${found.length} agents found (${found.filter(a => a.status === 'Shadow').length} shadow)`, c.id);
+  const IMPACT = { S04: '1,904 calls in 30 days reading s3://hlb-loan-applications/* through an MCP server that accepts unauthenticated requests.', G05: '642 calls in 30 days sending an unmasked production customer extract to a hosted model from a personal notebook.' };
+  found.forEach(a => {
+    if (agentById(a.id)) return;
+    S.agents.push(a); UI.flash.push(a.id);
+    if (a.status === 'Shadow') {
+      const id = 'INC-' + (S.seqI++);
+      S.incidents.unshift({ id, title: `Shadow AI found: ${a.name}`, agent: a.id, sev: 'Sev 2', status: 'Open', opened: '2026-10-29', closed: null, owner: 'Mei Lin Chen', category: 'Shadow AI · unregistered workload',
+        precedent: 'Unregistered AI built outside approved channels is a common way customer data ends up in tools nobody has assessed. Finding it early keeps it a governance issue rather than a breach.',
+        summary: a.desc, impact: IMPACT[a.id] || 'Under assessment.', rootCause: 'To be confirmed. Built outside the agent intake process. Creator: ' + a.ownerRole + '.',
+        timeline: [[nowStamp(), `Detected by Agent Nexus scan of ${c.label}`], [nowStamp(), 'Case opened; cloud platform team notified']],
+        actions: [['Identify owner and business purpose', 'Open', 'AI Risk'], ['Restrict data access until reviewed', 'Open', 'Cloud Platform'], ['Register through intake or decommission', 'Open', 'Owner (TBC)']],
+        controls: ['G1 Accountability & owner', 'G3 Data governance & security', 'CPS 234 Information Security'], evidence: [`Scan report ${c.id} ${nowStamp()}`, 'Invocation telemetry (30 days)'] });
+      audit('Policy engine', 'Incident', `${id} opened: shadow AI ${a.name}`, id);
+    } else {
+      const id = 'R-' + (S.seqR++);
+      S.reviews.unshift(reviewFromAgent(id, a));
+      audit('Policy engine', 'Review', `${id} created for discovered agent ${a.name}`, id);
+    }
+    audit('Scanner', 'Registry', `${a.id} ${a.name} registered from ${c.label}`, a.id);
+  });
+  save(); closeDrawer(); toast(`${found.length} assets registered from ${c.label}`); go('registry'); UI.flash = found.map(a => a.id); rerender();
+}
+function reviewFromAgent(id, a) {
+  const g = s => s >= 75 ? 1 : 0;
+  return { id, agentId: a.id, source: 'Scan', agent: a.name, platform: a.platform, submitter: a.owner, bu: a.bu, submitted: '2026-10-29', due: '2026-11-05', purpose: a.desc,
+    customerFacing: a.customerFacing, autonomy: a.autonomy, risk: a.risk, model: a.models.map(m => MODELS[m].name).join(', '), tools: a.tools.map(t => `${TOOLS[t].name} (${TOOLS[t].action.toLowerCase()})`),
+    data: a.data.map(d => DATA[d].name), dataCls: Array.from(new Set(a.data.map(d => DATA[d].cls))), evals: { groundedness: null, redteam: null, bias: 'Not run', jailbreak: null },
+    pia: 'Not started', cps230: a.risk === 'High' ? 'To be assessed' : 'Not material', hitl: /L1/.test(a.autonomy) ? 'Advisory output only' : /L2/.test(a.autonomy) ? 'Staff approve actions' : 'None proposed',
+    guardrails: [g(a.scores.gov), g(a.scores.gov), g(Math.min(a.scores.data, a.scores.sec)), g(a.scores.rel), /L1|L2/.test(a.autonomy) ? 1 : 0, g(a.scores.trans), g(a.scores.trans), g(a.scores.sec), 1, g(a.scores.gov)], status: 'Pending', notes: [] };
+}
+
+/* ======================================================================
+   CATALOG
+   ====================================================================== */
+function viewCatalog() {
+  const tabs = [['agents', 'Agents', S.agents.length], ['skills', 'Skills', uniq(S.agents.flatMap(a => a.skills)).length], ['tools', 'Tools', uniq(S.agents.flatMap(a => a.tools)).length], ['data', 'Data sources', uniq(S.agents.flatMap(a => a.data)).length]];
+  let body = '';
+  if (UI.catTab === 'agents') {
+    const q = UI.catQ.toLowerCase();
+    const list = S.agents.filter(a => (!q || (a.name + a.bu + a.owner + a.desc).toLowerCase().includes(q)) && (!UI.catPlat || a.platform === UI.catPlat) && (!UI.catBU || a.bu === UI.catBU) && (!UI.catRisk || a.risk === UI.catRisk) && (!UI.catStatus || a.status === UI.catStatus || (UI.catStatus === 'Suspended' && a.status === 'Rejected')));
+    const filters = `<div class="filters">
+      <input type="search" id="catQ" placeholder="Search name, owner, purpose" value="${esc(UI.catQ)}">
+      <select id="catPlat" aria-label="Platform"><option value="">All platforms</option>${uniq(S.agents.map(a => a.platform)).map(p => `<option value="${p}" ${UI.catPlat === p ? 'selected' : ''}>${esc(PLATFORMS[p].name)}</option>`).join('')}</select>
+      <select id="catBU" aria-label="Business unit"><option value="">All business units</option>${uniq(S.agents.map(a => a.bu)).sort().map(b => `<option ${UI.catBU === b ? 'selected' : ''}>${esc(b)}</option>`).join('')}</select>
+      <select id="catRisk" aria-label="Risk"><option value="">Any risk</option>${['High', 'Medium', 'Low'].map(r => `<option ${UI.catRisk === r ? 'selected' : ''}>${r}</option>`).join('')}</select>
+      <select id="catStatus" aria-label="Status"><option value="">Any status</option>${['Approved', 'Approved with conditions', 'In review', 'Shadow', 'Suspended'].map(r => `<option ${UI.catStatus === r ? 'selected' : ''}>${r}</option>`).join('')}</select>
+      ${(UI.catQ || UI.catPlat || UI.catBU || UI.catRisk || UI.catStatus) ? `<button class="btn sm" data-act="clearcat">Clear filters</button>` : ''}
+      <span style="margin-left:auto" class="seg">${[['cards', 'Cards'], ['table', 'Table']].map(([k, l]) => `<button data-catview="${k}" class="${UI.catView === k ? 'on' : ''}">${l}</button>`).join('')}</span></div>`;
+    if (UI.catView === 'cards') {
+      body = filters + `<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">${list.map(a => `<a class="panel" href="#agent-${a.id}" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:10px">
+        <div class="row" style="flex-wrap:nowrap">${pt(a.platform)}<span style="min-width:0;flex:1"><b style="display:block;font-weight:600">${esc(a.name)}</b><small class="muted">${esc(a.bu)} · ${esc(a.owner)}</small></span>${a.status === 'Shadow' ? '' : `<span title="Trust score">${ring(trust(a), 48, '')}</span>`}</div>
+        <div class="small" style="color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(a.desc)}</div>
+        <div class="chips">${statusChip(a.status)}&nbsp;${riskChip(a.risk)}${a.customerFacing ? chip('Customer-facing', 'info') : ''}${a.protocols.map(p => chip(p)).join('')}</div>
+        <div class="row small muted" style="border-top:1px solid var(--line);padding-top:10px;gap:14px"><span><b class="num" style="color:var(--ink)">${fmt(a.users.count)}</b> users</span><span><b style="color:var(--ink)">${a.tools.length}</b> tools</span><span><b style="color:var(--ink)">${a.skills.length}</b> skills</span><span><b style="color:var(--ink)">${a.data.length}</b> data</span></div></a>`).join('') || '<div class="empty">No agents match these filters.</div>'}</div>`;
+    } else {
+      body = filters + `<div class="tbl-wrap"><table><thead><tr><th>Agent</th><th>Business unit</th><th>Users</th><th>Tools</th><th>Skills</th><th>Trust</th><th>Risk</th><th>Status</th></tr></thead><tbody>${list.map(a => `<tr class="click" data-href="#agent-${a.id}"><td><div class="cell-name">${pt(a.platform)}<span><b>${esc(a.name)}</b><small>${esc(a.owner)}</small></span></div></td><td class="small">${esc(a.bu)}</td><td class="num">${fmt(a.users.count)}</td><td class="num">${a.tools.length}</td><td class="num">${a.skills.length}</td><td>${a.status === 'Shadow' ? '<span class="muted">n/a</span>' : scoreBar(trust(a))}</td><td>${riskChip(a.risk)}</td><td>${statusChip(a.status)}</td></tr>`).join('')}</tbody></table></div>`;
+    }
+  } else if (UI.catTab === 'skills') {
+    const ids = uniq(S.agents.flatMap(a => a.skills));
+    body = `<div class="tbl-wrap"><table><thead><tr><th>Skill</th><th>Source library</th><th>Version</th><th>Published by</th><th>Used by</th><th>Tags</th></tr></thead><tbody>${ids.map(id => { const k = SKILLS[id]; const u = S.agents.filter(a => a.skills.includes(id)); return `<tr class="click" data-href="#agent-${u[0].id}"><td><b style="font-weight:500">${esc(k.name)}</b></td><td class="small">${esc(k.library)}</td><td class="mono">${esc(k.version)}</td><td class="small">${esc(k.publisher)}</td><td class="small">${u.map(x => esc(x.name)).join(', ')}</td><td>${tagChips(k.tags)}</td></tr>`; }).join('')}</tbody></table></div>`;
+  } else if (UI.catTab === 'tools') {
+    const ids = uniq(S.agents.flatMap(a => a.tools));
+    body = `<div class="tbl-wrap"><table><thead><tr><th>Tool</th><th>Served by</th><th>Action</th><th>Data</th><th>Used by</th><th>Tags</th></tr></thead><tbody>${ids.map(id => { const t = TOOLS[id]; const u = S.agents.filter(a => a.tools.includes(id)); return `<tr class="click" data-href="#agent-${u[0].id}"><td><b style="font-weight:500">${esc(t.name)}</b><br><span class="mono muted">${id}</span></td><td class="small">${t.via === 'native' ? 'Native to platform' : esc(MCP[t.via].name)}</td><td>${chip(t.action, t.action === 'Write' || t.action === 'Decide' ? 'warn' : 'info')}</td><td class="small">${esc(t.data)}</td><td class="small">${u.map(x => esc(x.name)).join(', ')}</td><td>${tagChips(t.tags)}</td></tr>`; }).join('')}</tbody></table></div>`;
+  } else {
+    const ids = uniq(S.agents.flatMap(a => a.data));
+    body = `<div class="tbl-wrap"><table><thead><tr><th>Data source</th><th>Platform</th><th>Classification</th><th>Used by</th><th>Quality &amp; trust</th></tr></thead><tbody>${ids.map(id => { const d = DATA[id]; const u = S.agents.filter(a => a.data.includes(id)); return `<tr class="click" data-href="#agent-${u[0].id}"><td><b style="font-weight:500">${esc(d.name)}</b></td><td class="small">${esc(d.platform)}</td><td>${chip(d.cls, /PII|PCI|Sensitive/.test(d.cls) ? 'warn' : 'info')}</td><td class="small">${u.map(x => esc(x.name)).join(', ')}</td><td>${tagChips(d.tags)}</td></tr>`; }).join('')}</tbody></table></div>`;
+  }
+  return `<div class="ph"><div><h1>AI catalog</h1><p>Business context for every AI asset: what it does, who owns it, what it can touch, and whether its parts are trusted.</p></div></div>
+    <div class="tabs" role="tablist">${tabs.map(([k, l, n]) => `<button role="tab" data-cattab="${k}" class="${UI.catTab === k ? 'on' : ''}">${l} <span class="chip">${n}</span></button>`).join('')}</div>${body}`;
+}
+const uniq = a => Array.from(new Set(a));
+
+/* ======================================================================
+   AGENT DETAIL + GRAPH
+   ====================================================================== */
+let agentTab = 'graph';
+function viewAgent(id) {
+  const a = agentById(id);
+  if (!a) return `<div class="empty"><b>Agent ${esc(id)} is not in the registry yet.</b><p>It may live in a landscape that has not been scanned.</p><a class="btn" href="#registry">Open registry</a></div>`;
+  const t = trust(a);
+  const incs = S.incidents.filter(i => i.agent === a.id);
+  const rev = S.reviews.find(r => r.agentId === a.id && r.status === 'Pending');
+  const tabs = [['graph', 'Graph'], ['trust', 'Trust score'], ['access', 'Users & access'], ['compliance', 'Compliance'], ['activity', 'Activity']];
+  return `<div class="crumbs"><a href="#catalog">AI catalog</a><span>/</span><span>${esc(a.bu)}</span><span>/</span><span>${esc(a.name)}</span></div>
+    <div class="agent-head">${pt(a.platform, 'lg')}<div class="grow"><h1>${esc(a.name)}</h1><p>${esc(a.desc)}</p>
+      <div class="chips">${statusChip(a.status)}&nbsp;${riskChip(a.risk)}${a.customerFacing ? chip('Customer-facing', 'info') : chip('Internal', '')}${a.protocols.map(p => chip(p, 'info')).join('')}${offshore(a) ? chip('Offshore processing', 'warn') : ''}${incs.filter(isOpenInc).map(i => `<a href="#incident-${i.id}" style="text-decoration:none">${chip(i.id + ' open', 'crit')}</a>`).join('')}</div></div>
+      ${a.status === 'Shadow' ? `<div class="panel" style="max-width:240px"><b style="color:var(--crit)">No trust score</b><div class="small muted">Shadow workloads are scored only after an owner registers them.</div></div>` : ring(t, 96)}
+      <div class="row" style="flex-direction:column;align-items:stretch">
+        ${rev ? `<a class="btn" href="#review-${rev.id}">${ICON.reviews} Open review ${rev.id}</a>` : `<button class="btn" data-act="toreview" data-id="${a.id}">${ICON.reviews} Send to review</button>`}
+        ${a.status === 'Suspended' ? `<button class="btn" data-act="reinstate" data-id="${a.id}">${ICON.check} Reinstate</button>` : `<button class="btn danger" data-act="suspend" data-id="${a.id}">${ICON.x} Suspend agent</button>`}
+      </div></div>
+    <div class="facts">
+      <div><small>Platform</small><b>${esc(PLATFORMS[a.platform].name)}</b></div>
+      <div><small>Deployed in</small><b>${esc(a.region)}</b></div>
+      <div><small>Environment</small><b>${esc(a.env)}</b></div>
+      <div><small>Owner</small><b>${esc(a.owner)}</b></div>
+      <div><small>Users</small><b class="num">${fmt(a.users.count)}</b></div>
+      <div><small>Autonomy</small><b>${esc(a.autonomy)}</b></div>
+      <div><small>Calls (30 days)</small><b class="num">${fmt(a.inv30)}</b></div>
+      <div><small>Discovered via</small><b>${esc(a.discovered)}</b></div>
+    </div>
+    <div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" data-agenttab="${k}" class="${agentTab === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+    <div id="agentTab">${agentTabHtml(a)}</div>`;
+}
+function agentTabHtml(a) {
+  if (agentTab === 'graph') return `<div class="graph-wrap"><div class="graph"><div id="cy"></div>
+      <div class="graph-tools"><button class="btn sm" data-g="expand">${ICON.expand} Show all sources</button><button class="btn sm" data-g="fit">${ICON.fit} Fit</button><button class="btn sm" data-g="reset">${ICON.reset} Reset</button></div>
+      <div class="graph-hint">Click a skill, tool, data source or model to trace where it comes from</div>
+      <div class="graph-legend">${[['Agent', 'var(--accent)'], ['Model', '#7A5BC7'], ['Skill', '#2E66C7'], ['Tool', '#1F9D6B'], ['Data', '#C98A1B'], ['MCP server', '#53667A'], ['Origin', '#9AA5B1']].map(([l, c]) => `<span><i style="background:${c}"></i>${l}</span>`).join('')}<span><i style="background:transparent;border:2px solid var(--crit)"></i>Risk flag</span></div></div>
+      <aside class="inspector" id="inspector">${inspectAgent(a)}</aside></div>`;
+  if (agentTab === 'trust') {
+    if (a.status === 'Shadow') return `<div class="panel empty">Shadow workloads have no trust score until they are registered with an owner.</div>`;
+    const D = [['gov', 'Governance', 'Owner, approvals, documentation and review cadence'], ['sec', 'Security', 'Identity, least privilege, MCP auth, injection defences'], ['data', 'Data', 'Classification, quality and lineage of every source the agent reads'], ['rel', 'Reliability', 'Evaluation results, error rates, drift and incident history'], ['trans', 'Transparency', 'Disclosure to users, citations, explanation and logging']];
+    const sig = [];
+    a.tools.forEach(t => { const T = TOOLS[t], M = MCP[T.via]; T.tags.forEach(x => tagTone(x) !== 'ok' && tagTone(x) !== 'info' && sig.push([tagTone(x), `Tool “${T.name}”: ${x}`])); if (M) M.tags.forEach(x => tagTone(x) === 'crit' && sig.push(['crit', `MCP server ${M.name}: ${x}`])); });
+    a.skills.forEach(s => SKILLS[s].tags.forEach(x => tagTone(x) !== 'ok' && tagTone(x) !== 'info' && sig.push([tagTone(x), `Skill “${SKILLS[s].name}”: ${x}`])));
+    a.data.forEach(d => DATA[d].tags.forEach(x => tagTone(x) !== 'ok' && tagTone(x) !== 'info' && sig.push([tagTone(x), `Data “${DATA[d].name}”: ${x}`])));
+    a.models.forEach(m => MODELS[m].tags.forEach(x => tagTone(x) !== 'ok' && tagTone(x) !== 'info' && sig.push([tagTone(x), `Model ${MODELS[m].name}: ${x}`])));
+    S.incidents.filter(i => i.agent === a.id).forEach(i => sig.push([isOpenInc(i) ? 'crit' : 'info', `${i.id}: ${i.title} (${i.status.toLowerCase()})`]));
+    return `<div class="grid g-2"><section class="panel"><h2>Score breakdown <span class="right muted">Weighted 25 / 25 / 20 / 15 / 15</span></h2><div class="dims">${D.map(([k, l, d]) => `<div class="dim"><span><b style="font-weight:500">${l}</b><br><small class="muted">${d}</small></span><span class="track"><i style="width:${a.scores[k]}%;background:${toneVar(scoreTone(a.scores[k]))}"></i></span><b class="num">${a.scores[k]}</b></div>`).join('')}</div></section>
+      <section class="panel"><h2>Signals affecting the score</h2><div class="list">${sig.map(([t, s]) => `<div class="li"><span class="sev ${t}"></span><span class="grow">${esc(s)}</span></div>`).join('') || '<div class="empty">No negative signals.</div>'}</div></section></div>`;
+  }
+  if (agentTab === 'access') {
+    return `<div class="grid g-2"><section class="panel"><h2>Who uses it</h2><div class="list">${a.users.groups.map(g => `<div class="li"><span class="grow"><b>${esc(g)}</b></span></div>`).join('')}</div><p class="small muted" style="margin-bottom:0">${fmt(a.users.count)} distinct users in the last 30 days.</p></section>
+      <section class="panel"><h2>Runs as</h2><dl class="kv"><dt>Identity</dt><dd class="mono">${a.platform === 'bedrock' ? `arn:aws:iam::…:role/${a.name.toLowerCase().replace(/[^a-z]+/g, '-')}` : a.platform === 'vertex' ? `${a.name.toLowerCase().replace(/[^a-z]+/g, '-').slice(0, 24)}@…iam.gserviceaccount.com` : 'Platform agent user'}</dd><dt>Owner</dt><dd>${esc(a.owner)}<br><span class="muted small">${esc(a.ownerRole)}</span></dd><dt>Autonomy</dt><dd>${esc(a.autonomy)}</dd><dt>Version</dt><dd class="mono">${esc(a.version)}</dd></dl></section></div>
+      <div class="tbl-wrap" style="margin-top:16px"><table><thead><tr><th>Tool permission</th><th>Action</th><th>Data</th><th>Served by</th><th>Tags</th></tr></thead><tbody>${a.tools.map(t => { const T = TOOLS[t]; return `<tr><td><b style="font-weight:500">${esc(T.name)}</b></td><td>${chip(T.action, T.action === 'Write' || T.action === 'Decide' ? 'warn' : 'info')}</td><td class="small">${esc(T.data)}</td><td class="small">${T.via === 'native' ? 'Native' : esc(MCP[T.via].name)}</td><td>${tagChips(T.tags)}</td></tr>`; }).join('')}</tbody></table></div>`;
+  }
+  if (agentTab === 'compliance') {
+    const g = reviewFromAgent('x', a).guardrails;
+    return `<div class="grid g-2"><section class="panel"><h2>Obligations</h2><div class="list">${a.regs.map(r => `<div class="li"><span class="sev ${a.status === 'Shadow' ? 'crit' : 'ok'}"></span><span class="grow"><b>${esc(REGS[r])}</b><small>${a.status === 'Shadow' ? 'No evidence: unregistered' : 'Mapped to controls · evidence current'}</small></span></div>`).join('')}</div></section>
+      <section class="panel"><h2>AU AI Safety Standard guardrails</h2><div class="gr" style="grid-template-columns:repeat(2,minmax(0,1fr))">${GUARDRAILS.map((x, i) => `<span class="${g[i] ? 'y' : 'n'}">${g[i] ? '✓' : '✕'} ${esc(x)}</span>`).join('')}</div></section></div>`;
+  }
+  const ev = S.audit.filter(e => e.ref === a.id || e.text.includes(a.name) || S.incidents.some(i => i.agent === a.id && i.id === e.ref));
+  return `<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Actor</th><th>Type</th><th>Event</th></tr></thead><tbody>${ev.map(e => `<tr><td class="mono">${esc(e.ts)}</td><td class="small">${esc(e.actor)}</td><td>${chip(e.type, 'info')}</td><td>${esc(e.text)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">No events yet.</td></tr>'}</tbody></table></div>`;
+}
+
+const GCOL = { agent: null, model: '#7A5BC7', skill: '#2E66C7', tool: '#1F9D6B', data: '#C98A1B', mcp: '#53667A', origin: '#9AA5B1', peer: null };
+function baseElements(a) {
+  const els = [], seen = new Set();
+  const node = (id, label, type, ref, level, tags) => { if (seen.has(id)) return; seen.add(id); els.push({ data: { id, label, type, ref, level, risk: riskOf(tags || []) } }); };
+  const edge = (s, t, label) => { const id = s + '>' + t; if (seen.has(id)) return; seen.add(id); els.push({ data: { id, source: s, target: t, label } }); };
+  node('ag', a.name, 'agent', a.id, 4, a.status === 'Shadow' ? ['Unregistered'] : []);
+  a.models.forEach(m => { node('m:' + m, MODELS[m].name, 'model', m, 3, MODELS[m].tags); edge('ag', 'm:' + m, 'reasons with'); });
+  a.skills.forEach(s => { node('s:' + s, SKILLS[s].name, 'skill', s, 3, SKILLS[s].tags); edge('ag', 's:' + s, 'has skill'); });
+  a.tools.forEach(t => { node('t:' + t, TOOLS[t].name, 'tool', t, 3, TOOLS[t].tags); edge('ag', 't:' + t, 'calls'); });
+  a.data.forEach(d => { node('d:' + d, DATA[d].name, 'data', d, 3, DATA[d].tags); edge('ag', 'd:' + d, 'reads'); });
+  a.a2a.forEach(p => { const P = agentById(p); node('p:' + p, P ? P.name : p, 'peer', p, 3, P && P.status === 'Shadow' ? ['Unregistered'] : []); edge('ag', 'p:' + p, 'A2A'); });
+  return els;
+}
+function expandNode(n, a, noLayout) {
+  const d = n.data(), add = [];
+  const has = id => cy.getElementById(id).length > 0;
+  const node = (id, label, type, ref, level, tags) => { if (!has(id) && !add.some(x => x.data.id === id)) add.push({ data: { id, label, type, ref, level, risk: riskOf(tags || []) } }); };
+  const edge = (s, t, label) => { const id = s + '>' + t; if (!has(id) && !add.some(x => x.data.id === id)) add.push({ data: { id, source: s, target: t, label } }); };
+  if (d.type === 'tool') {
+    const T = TOOLS[d.ref];
+    if (T.via === 'native') { node('o:' + a.platform, PLATFORMS[a.platform].name, 'origin', a.platform, 2); edge(d.id, 'o:' + a.platform, 'native to'); }
+    else { const M = MCP[T.via]; node('x:' + T.via, M.name, 'mcp', T.via, 2, M.tags); edge(d.id, 'x:' + T.via, 'served by'); node('o:' + M.host, PLATFORMS[M.host].name, 'origin', M.host, 1); edge('x:' + T.via, 'o:' + M.host, 'hosted on'); node('pub:' + M.publisher, M.publisher, 'origin', M.publisher, 1); edge('x:' + T.via, 'pub:' + M.publisher, 'published by'); }
+  } else if (d.type === 'skill') {
+    const K = SKILLS[d.ref]; node('lib:' + K.library, K.library, 'origin', K.library, 2); edge(d.id, 'lib:' + K.library, 'from v' + K.version); node('pub:' + K.publisher, K.publisher, 'origin', K.publisher, 1); edge('lib:' + K.library, 'pub:' + K.publisher, 'maintained by');
+  } else if (d.type === 'data') {
+    const D = DATA[d.ref]; node('dp:' + D.platform, D.platform, 'origin', D.platform, 2); edge(d.id, 'dp:' + D.platform, 'stored in');
+  } else if (d.type === 'model') {
+    const M = MODELS[d.ref]; node('mp:' + M.provider, M.provider, 'origin', M.provider, 2); edge(d.id, 'mp:' + M.provider, 'provided by'); node('o:' + M.host, M.region, 'origin', M.host, 1); edge('mp:' + M.provider, 'o:' + M.host, 'served in');
+  } else if (d.type === 'mcp') {
+    const M = MCP[d.ref]; node('o:' + M.host, PLATFORMS[M.host].name, 'origin', M.host, 1); edge(d.id, 'o:' + M.host, 'hosted on');
+  }
+  if (add.length) { cy.add(add); if (!noLayout) layout(); }
+}
+function layout(fitOnly) {
+  if (!cy) return;
+  cy.layout({ name: 'concentric', concentric: n => n.data('level'), levelWidth: () => 1, minNodeSpacing: 46, animate: !fitOnly, animationDuration: 380, padding: 36, startAngle: 3.4 }).run();
+}
+function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#888'; }
+function mountAgent(id) {
+  const a = agentById(id); if (!a || agentTab !== 'graph') return;
+  const el = $('#cy'); if (!el) return;
+  if (typeof cytoscape === 'undefined') { el.innerHTML = '<div class="empty">Graph library could not load. Check your connection.</div>'; return; }
+  const acc = cssVar('--accent'), ink = cssVar('--ink'), muted = cssVar('--muted'), line = cssVar('--line'), surf = cssVar('--surface'), crit = cssVar('--crit'), warn = cssVar('--warn');
+  cy = cytoscape({ container: el, elements: baseElements(a), wheelSensitivity: 0.25, minZoom: .3, maxZoom: 1.25,
+    style: [
+      { selector: 'node', style: { 'background-color': n => GCOL[n.data('type')] || acc, 'label': 'data(label)', 'font-family': 'IBM Plex Sans, system-ui, sans-serif', 'font-size': 10.5, 'color': ink, 'text-valign': 'bottom', 'text-margin-y': 6, 'text-wrap': 'wrap', 'text-max-width': 112, 'width': 26, 'height': 26, 'border-width': 3, 'border-color': surf, 'text-background-color': surf, 'text-background-opacity': .85, 'text-background-padding': 2, 'text-background-shape': 'roundrectangle' } },
+      { selector: 'node[type="agent"]', style: { 'width': 58, 'height': 58, 'font-size': 12.5, 'font-weight': 600, 'shape': 'round-rectangle', 'background-color': acc } },
+      { selector: 'node[type="peer"]', style: { 'background-color': surf, 'border-color': acc, 'border-width': 3, 'shape': 'round-rectangle', 'width': 34, 'height': 34 } },
+      { selector: 'node[type="origin"]', style: { 'shape': 'round-rectangle', 'width': 22, 'height': 22, 'font-size': 10, 'color': muted } },
+      { selector: 'node[type="mcp"]', style: { 'shape': 'hexagon', 'width': 30, 'height': 30 } },
+      { selector: 'node[risk="crit"]', style: { 'border-color': crit, 'border-width': 3.5 } },
+      { selector: 'node[risk="warn"]', style: { 'border-color': warn, 'border-width': 3 } },
+      { selector: 'edge', style: { 'width': 1.4, 'line-color': line, 'target-arrow-color': line, 'target-arrow-shape': 'triangle', 'arrow-scale': .7, 'curve-style': 'bezier', 'label': 'data(label)', 'font-size': 8.5, 'color': muted, 'text-rotation': 'autorotate', 'text-opacity': 0, 'text-background-color': surf, 'text-background-opacity': 1, 'text-background-padding': 2 } },
+      { selector: '.faded', style: { 'opacity': .22 } },
+      { selector: 'edge.hl', style: { 'line-color': acc, 'target-arrow-color': acc, 'width': 2.2, 'text-opacity': 1 } },
+      { selector: 'node:selected', style: { 'overlay-color': acc, 'overlay-opacity': .14, 'overlay-padding': 8 } },
+    ] });
+  layout(true);
+  cy.on('tap', 'node', e => {
+    const n = e.target; expandNode(n, a);
+    cy.elements().addClass('faded'); cy.edges().removeClass('hl');
+    const nb = n.closedNeighborhood().union(n.predecessors()).union(n.successors());
+    nb.removeClass('faded'); n.connectedEdges().addClass('hl'); n.successors('edge').addClass('hl'); n.predecessors('edge').addClass('hl');
+    $('#inspector').innerHTML = inspectNode(n.data(), a);
+  });
+  cy.on('tap', e => { if (e.target === cy) { cy.elements().removeClass('faded'); cy.edges().removeClass('hl'); $('#inspector').innerHTML = inspectAgent(a); } });
+}
+function inspectAgent(a) {
+  return `<span class="type">Agent</span><h3>${esc(a.name)}</h3><div class="chips" style="margin:6px 0 12px">${statusChip(a.status)}</div>
+    <dl class="kv"><dt>Models</dt><dd>${a.models.map(m => esc(MODELS[m].name)).join(', ')}</dd><dt>Skills</dt><dd>${a.skills.length}</dd><dt>Tools</dt><dd>${a.tools.length} (${a.tools.filter(t => /Write|Decide/.test(TOOLS[t].action)).length} can change data)</dd><dt>Data</dt><dd>${a.data.map(d => esc(DATA[d].cls)).join(', ')}</dd><dt>Talks to</dt><dd>${a.a2a.map(p => agentById(p) ? esc(agentById(p).name) : p).join(', ') || 'No other agents'}</dd>${a.card ? `<dt>Agent card</dt><dd class="mono">${esc(a.card)}</dd>` : ''}</dl>
+    <p class="small muted">Nodes with a red ring carry a risk flag. Click any node to see its tags and trace it back to its source.</p>`;
+}
+function inspectNode(d, a) {
+  const lineage = steps => `<h4 class="small muted" style="text-transform:uppercase;letter-spacing:.07em;font-weight:500;margin:16px 0 0">Comes from</h4><div class="lineage">${steps.map(([b, s]) => `<div><b style="font-weight:500">${esc(b)}</b><small>${esc(s)}</small></div>`).join('')}</div>`;
+  if (d.type === 'agent') return inspectAgent(a);
+  if (d.type === 'tool') { const T = TOOLS[d.ref], M = MCP[T.via];
+    return `<span class="type">Tool · ${esc(T.action)}</span><h3>${esc(T.name)}</h3><div style="margin:8px 0">${tagChips(T.tags)}</div><dl class="kv"><dt>Tool ID</dt><dd class="mono">${d.ref}</dd><dt>Data</dt><dd>${esc(T.data)}</dd></dl>` +
+      (M ? lineage([[M.name, `MCP server · ${M.auth}`], [M.publisher, 'Publisher'], [PLATFORMS[M.host].name, M.endpoint]]) + `<div style="margin-top:10px">${tagChips(M.tags)}</div>` : lineage([[PLATFORMS[a.platform].name, 'Built-in platform action']])); }
+  if (d.type === 'skill') { const K = SKILLS[d.ref];
+    return `<span class="type">Skill</span><h3>${esc(K.name)}</h3><div style="margin:8px 0">${tagChips(K.tags)}</div><dl class="kv"><dt>Version</dt><dd class="mono">${esc(K.version)}</dd></dl>` + lineage([[K.library, 'Skill library'], [K.publisher, 'Maintainer']]); }
+  if (d.type === 'data') { const D = DATA[d.ref];
+    return `<span class="type">Data source</span><h3>${esc(D.name)}</h3><div style="margin:8px 0">${tagChips(D.tags)}</div><dl class="kv"><dt>Class</dt><dd>${esc(D.cls)}</dd><dt>Context use</dt><dd>${D.tags.includes('Clean') || D.tags.includes('Trusted') ? 'Trusted for grounding' : 'Not cleared as trusted context'}</dd></dl>` + lineage([[D.platform, 'System holding the data']]); }
+  if (d.type === 'model') { const M = MODELS[d.ref];
+    return `<span class="type">Model · ${esc(M.type)}</span><h3>${esc(M.name)}</h3><div style="margin:8px 0">${tagChips(M.tags)}</div><dl class="kv"><dt>Region</dt><dd>${esc(M.region)}</dd><dt>Licence</dt><dd>${esc(M.license || 'Commercial terms')}</dd></dl>` + lineage([[M.provider, 'Model provider'], [PLATFORMS[M.host].name, M.region]]); }
+  if (d.type === 'mcp') { const M = MCP[d.ref];
+    return `<span class="type">MCP server</span><h3>${esc(M.name)}</h3><div style="margin:8px 0">${tagChips(M.tags)}</div><dl class="kv"><dt>Endpoint</dt><dd class="mono">${esc(M.endpoint)}</dd><dt>Auth</dt><dd>${esc(M.auth)}</dd><dt>Publisher</dt><dd>${esc(M.publisher)}</dd><dt>Tools</dt><dd>${Object.keys(TOOLS).filter(t => TOOLS[t].via === d.ref).map(t => esc(TOOLS[t].name)).join(', ')}</dd></dl>`; }
+  if (d.type === 'peer') { const P = agentById(d.ref);
+    return `<span class="type">Peer agent (A2A)</span><h3>${esc(P ? P.name : d.ref)}</h3>${P ? `<div class="chips" style="margin:6px 0 12px">${statusChip(P.status)}</div><p class="small">${esc(P.desc)}</p><dl class="kv"><dt>Platform</dt><dd>${esc(PLATFORMS[P.platform].name)}</dd><dt>Trust</dt><dd>${P.status === 'Shadow' ? 'n/a' : trust(P)}</dd></dl><a class="btn sm" href="#agent-${P.id}">Open agent</a>` : '<p class="small muted">Not yet in the registry. Scan the landscape it runs in.</p>'}`; }
+  return `<span class="type">Origin</span><h3>${esc(d.label)}</h3><p class="small muted">Where the connected asset comes from.</p>`;
+}
+
+/* ======================================================================
+   REVIEWS
+   ====================================================================== */
+function precheck(r) {
+  const f = [];
+  if (r.customerFacing && /L3/.test(r.autonomy) && /none/i.test(r.hitl)) f.push(['crit', 'Customer-facing agent acts on its own with no human oversight proposed']);
+  const miss = r.guardrails.map((v, i) => v ? null : GUARDRAILS[i].split(' ')[0]).filter(Boolean);
+  if (miss.length) f.push([miss.length > 2 ? 'crit' : 'warn', `No evidence for guardrails ${miss.join(', ')}`]);
+  if (r.pia !== 'Completed' && r.pia !== 'Not required') f.push(['warn', `Privacy impact assessment: ${r.pia.toLowerCase()}`]);
+  if (r.evals.groundedness == null) f.push(['warn', 'No evaluation results submitted yet']);
+  if (r.evals.redteam != null && r.evals.redteam < 90) f.push(['warn', `Red-team pass rate ${r.evals.redteam}% is below the 90% bar`]);
+  if (r.evals.bias === 'Not run' && r.customerFacing) f.push(['warn', 'Bias testing not run for a customer-facing agent']);
+  if (/Material|assessed/.test(r.cps230)) f.push(['info', 'May support a CPS 230 material service: Operational Risk sign-off needed']);
+  if (r.source === 'Scan') f.push(['info', 'Found by scan already running in production without intake approval']);
+  if (!f.length) f.push(['ok', 'All intake checks passed']);
+  return f;
+}
+function viewReviews() {
+  const list = S.reviews.filter(r => UI.revFilter === 'All' || (UI.revFilter === 'Pending' ? r.status === 'Pending' : r.status !== 'Pending'));
+  if (!UI.revSel || !S.reviews.find(r => r.id === UI.revSel)) UI.revSel = (list[0] || {}).id;
+  const r = S.reviews.find(x => x.id === UI.revSel);
+  const q = list.map(x => `<button class="${x.id === UI.revSel ? 'on' : ''}" data-rev="${x.id}">${pt(x.platform, 'sm')}<span class="grow"><b>${esc(x.agent)}</b><small>${x.id} · ${esc(x.submitter)} · ${x.source === 'Scan' ? 'from scan' : 'submitted ' + x.submitted.slice(5)}</small></span>${x.status === 'Pending' ? riskChip(x.risk) : statusChip(x.status)}</button>`).join('') || '<div class="empty">Queue is clear.</div>';
+  return `<div class="ph"><div><h1>Review workbench</h1><p>New agents and changes waiting for GRC sign-off. Decisions update the registry and are written to the audit log.</p></div></div>
+    <div class="wb"><div class="queue"><div class="qhead"><span class="seg">${['Pending', 'Decided', 'All'].map(k => `<button data-revf="${k}" class="${UI.revFilter === k ? 'on' : ''}">${k}${k === 'Pending' ? ` (${S.reviews.filter(x => x.status === 'Pending').length})` : ''}</button>`).join('')}</span></div>${q}</div>
+    <div class="stack">${r ? reviewDetail(r) : '<div class="panel empty">Select a review.</div>'}</div></div>`;
+}
+function reviewDetail(r) {
+  const days = Math.round((new Date(r.due) - new Date('2026-10-29')) / 864e5);
+  const pc = precheck(r), a = r.agentId && agentById(r.agentId);
+  const ev = r.evals;
+  return `<section class="panel"><div class="row" style="align-items:flex-start;flex-wrap:nowrap">${pt(r.platform, 'lg')}<div style="flex:1;min-width:0"><div class="muted small">${r.id} · ${esc(PLATFORMS[r.platform].name)}</div><h2 style="font-family:var(--f-display);font-size:20px;margin:2px 0 6px">${esc(r.agent)}</h2><div class="chips">${riskChip(r.risk)}${r.customerFacing ? chip('Customer-facing', 'info') : chip('Internal')}${r.status === 'Pending' ? chip(days <= 2 ? `Due in ${days} day${days === 1 ? '' : 's'}` : `Due ${r.due.slice(8)}/${r.due.slice(5, 7)}`, days <= 2 ? 'crit' : 'info') : statusChip(r.status)}${r.source === 'Scan' ? chip('Discovered by scan', 'acc') : ''}</div></div>${a ? `<a class="btn sm" href="#agent-${a.id}">${ICON.catalog} View graph</a>` : ''}</div></section>
+    <section class="panel"><h2>${ICON.shield.replace('<svg', '<svg width="16" height="16"')} Nexus pre-check</h2><div class="list">${pc.map(([t, s]) => `<div class="li" style="padding:7px 0"><span class="sev ${t}"></span><span class="grow">${esc(s)}</span></div>`).join('')}</div></section>
+    <div class="form-grid">
+      <div class="full"><small>Purpose</small>${esc(r.purpose)}</div>
+      <div><small>Business unit</small>${esc(r.bu)}</div><div><small>Submitted by</small>${esc(r.submitter)} · ${esc(r.submitted)}</div>
+      <div><small>Autonomy level</small>${esc(r.autonomy)}</div><div><small>Human oversight</small>${esc(r.hitl)}</div>
+      <div><small>Model</small>${esc(r.model)}</div><div><small>Data classes</small><div class="chips">${r.dataCls.map(c => chip(c, /PII|PCI|Financial/.test(c) ? 'warn' : 'info')).join('')}</div></div>
+      <div><small>Tools requested</small>${r.tools.map(esc).join('<br>')}</div><div><small>Data accessed</small>${r.data.map(esc).join('<br>')}</div>
+      <div><small>Privacy impact assessment</small>${statusChip(r.pia === 'Completed' || r.pia === 'Not required' ? 'Done' : r.pia === 'In progress' ? 'In progress' : 'Open').replace(/>(Done|In progress|Open)</, '>' + esc(r.pia) + '<')}</div><div><small>CPS 230 materiality</small>${esc(r.cps230)}</div>
+    </div>
+    <section class="panel"><h2>Evaluation results</h2><div class="evals">
+      <div><b style="color:${ev.groundedness == null ? 'var(--muted)' : toneVar(ev.groundedness >= 92 ? 'ok' : 'warn')}">${ev.groundedness == null ? '—' : ev.groundedness + '%'}</b><small>Groundedness</small></div>
+      <div><b style="color:${ev.redteam == null ? 'var(--muted)' : toneVar(ev.redteam >= 90 ? 'ok' : 'warn')}">${ev.redteam == null ? '—' : ev.redteam + '%'}</b><small>Red-team pass</small></div>
+      <div><b style="color:${ev.jailbreak == null ? 'var(--muted)' : toneVar(ev.jailbreak >= 95 ? 'ok' : 'warn')}">${ev.jailbreak == null ? '—' : ev.jailbreak + '%'}</b><small>Jailbreak resistance</small></div>
+      <div><b style="color:${ev.bias === 'Pass' ? 'var(--ok)' : ev.bias === 'n/a' ? 'var(--muted)' : 'var(--warn)'}">${esc(ev.bias)}</b><small>Bias testing</small></div></div></section>
+    <section class="panel"><h2>AI Safety Standard evidence</h2><div class="gr">${GUARDRAILS.map((g, i) => `<span class="${r.guardrails[i] ? 'y' : 'n'}">${r.guardrails[i] ? '✓' : '✕'} ${esc(g)}</span>`).join('')}</div></section>
+    ${r.notes.length ? `<section class="panel"><h2>Decision history</h2><div class="stack" style="gap:8px">${r.notes.map(n => `<div class="note"><b>${esc(n.decision)}</b> · ${esc(n.by)} · ${esc(n.ts)}${n.text ? `<br>${esc(n.text)}` : ''}</div>`).join('')}</div></section>` : ''}
+    ${r.status === 'Pending' ? `<div class="decision"><label for="revNote" class="small" style="font-weight:500">Comments and conditions</label><textarea id="revNote" placeholder="Required when sending back or rejecting. Conditions are attached to the approval."></textarea><div id="revErr" class="small" style="color:var(--crit)" hidden>Add a comment so the submitter knows what to change.</div>
+      <div class="row"><button class="btn primary" data-dec="Approved">${ICON.check} Approve</button><button class="btn" data-dec="Approved with conditions">Approve with conditions</button><button class="btn warn" data-dec="Sent back">Send back for more work</button><button class="btn danger" data-dec="Rejected">Reject</button></div></div>` : ''}`;
+}
+function decide(dec) {
+  const r = S.reviews.find(x => x.id === UI.revSel); const txt = ($('#revNote').value || '').trim();
+  if ((dec === 'Sent back' || dec === 'Rejected' || dec === 'Approved with conditions') && !txt) { $('#revErr').hidden = false; $('#revNote').focus(); return; }
+  r.status = dec; r.notes.push({ decision: dec, by: ME.name, ts: nowStamp(), text: txt });
+  const a = r.agentId && agentById(r.agentId);
+  if (a) { a.status = dec === 'Rejected' ? 'Suspended' : dec === 'Sent back' ? 'Sent back' : dec; if (dec.startsWith('Approved')) { a.scores.gov = Math.max(a.scores.gov, 80); } }
+  audit(ME.name, 'Review', `${r.id} ${r.agent}: ${dec.toLowerCase()}${txt ? ' — ' + txt : ''}`, r.id);
+  save(); toast(`${r.agent}: ${dec.toLowerCase()}`);
+  const next = S.reviews.find(x => x.status === 'Pending'); UI.revSel = next ? next.id : r.id;
+  if (location.hash !== '#reviews') go('reviews'); else rerender();
+}
+
+/* ======================================================================
+   INCIDENTS
+   ====================================================================== */
+function viewIncidents() {
+  const I = S.incidents;
+  const open = I.filter(i => i.status === 'Open').length, cont = I.filter(i => i.status === 'Contained').length, rem = I.filter(i => i.status === 'Remediated' || i.status === 'Closed').length;
+  return `<div class="ph"><div><h1>Incidents &amp; cases</h1><p>AI failures tracked from detection to remediation, with root cause, controls and evidence ready for auditors.</p></div></div>
+    <div class="grid g-kpi" style="grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:16px">
+      <div class="kpi alert" style="cursor:default"><span class="lbl">Open</span><span class="val">${open}</span><span class="sub">Investigating</span></div>
+      <div class="kpi warnk" style="cursor:default"><span class="lbl">Contained</span><span class="val">${cont}</span><span class="sub">Harm stopped, fix pending</span></div>
+      <div class="kpi" style="cursor:default"><span class="lbl">Remediated</span><span class="val" style="color:var(--ok)">${rem}</span><span class="sub">Controls verified</span></div>
+      <div class="kpi" style="cursor:default"><span class="lbl">Median time to contain</span><span class="val">3.2<small style="font-size:14px"> h</small></span><span class="sub">Last 90 days</span></div></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Case</th><th>Agent</th><th>Category</th><th>Severity</th><th>Status</th><th>Opened</th><th>Owner</th></tr></thead><tbody>${I.map(i => { const a = i.agent && agentById(i.agent);
+      return `<tr class="click" data-href="#incident-${i.id}"><td><b style="font-weight:500">${esc(i.title)}</b><br><span class="mono muted">${i.id}</span></td><td><div class="row" style="flex-wrap:nowrap">${pt(a ? a.platform : i.platform, 'sm')}<span class="small">${a ? esc(a.name) : 'Unregistered tool'}</span></div></td><td class="small">${esc(i.category)}</td><td>${sevChip(i.sev)}</td><td>${statusChip(i.status)}</td><td class="mono">${esc(i.opened)}</td><td class="small">${esc(i.owner)}</td></tr>`; }).join('')}</tbody></table></div>`;
+}
+const NEXT_STATE = { Open: ['Contained', 'Mark contained'], Contained: ['Remediated', 'Mark remediated'], Remediated: ['Closed', 'Close case'] };
+function viewIncident(id) {
+  const i = S.incidents.find(x => x.id === id);
+  if (!i) return `<div class="empty">Case ${esc(id)} not found. <a href="#incidents">Back to incidents</a></div>`;
+  const a = i.agent && agentById(i.agent), nx = NEXT_STATE[i.status];
+  return `<div class="crumbs"><a href="#incidents">Incidents</a><span>/</span><span>${i.id}</span></div>
+    <div class="ph"><div><div class="chips" style="margin-bottom:6px">${sevChip(i.sev)}${statusChip(i.status)}&nbsp;${chip(i.category, 'info')}</div><h1>${esc(i.title)}</h1><p class="small muted">${i.id} · opened ${esc(i.opened)}${i.closed ? ' · closed ' + esc(i.closed) : ''} · owner ${esc(i.owner)}</p></div>
+      <div class="actions"><button class="btn" data-act="pack" data-id="${i.id}">${ICON.audit} Add to auditor pack</button>${nx ? `<button class="btn primary" data-act="advance" data-id="${i.id}">${ICON.check} ${nx[1]}</button>` : ''}</div></div>
+    <div class="grid g-2">
+      <div class="stack">
+        <section class="panel prose"><h3>What happened</h3><p>${esc(i.summary)}</p><h3>Impact</h3><p>${esc(i.impact)}</p><h3>Root cause</h3><p>${esc(i.rootCause)}</p><h3>Public precedent</h3><div class="precedent">${esc(i.precedent)}</div></section>
+        <section class="panel" style="padding:0"><h2 style="padding:16px 18px 4px">Remediation actions <span class="right muted">Click a status to update</span></h2><div style="overflow-x:auto"><table><thead><tr><th>Action</th><th>Owner</th><th>Status</th></tr></thead><tbody>${i.actions.map((x, k) => `<tr><td>${esc(x[0])}</td><td class="small">${esc(x[2])}</td><td><button class="btn sm" data-act="action" data-id="${i.id}" data-k="${k}">${statusChip(x[1])}</button></td></tr>`).join('')}</tbody></table></div></section>
+      </div>
+      <div class="stack">
+        ${a ? `<a class="panel" href="#agent-${a.id}" style="text-decoration:none;color:inherit"><h2>Linked agent</h2><div class="row" style="flex-wrap:nowrap">${pt(a.platform)}<span style="flex:1"><b style="display:block;font-weight:500">${esc(a.name)}</b><small class="muted">${esc(a.bu)} · ${esc(a.owner)}</small></span>${statusChip(a.status)}</div></a>` : `<section class="panel"><h2>Source</h2><div class="row">${pt(i.platform || 'browser')}<span><b style="font-weight:500">${esc(PLATFORMS[i.platform || 'browser'].name)}</b><br><small class="muted">Unregistered consumer AI service</small></span></div></section>`}
+        <section class="panel"><h2>Timeline</h2><div class="timeline">${i.timeline.map((t, k) => `<div class="tl"><span class="when">${esc(t[0])}</span><span class="rail"><i></i>${k < i.timeline.length - 1 ? '<span></span>' : ''}</span><span class="what">${esc(t[1])}</span></div>`).join('')}</div></section>
+        <section class="panel"><h2>Controls mapped</h2><div class="chips">${i.controls.map(c => chip(c, 'info')).join('')}</div></section>
+        <section class="panel"><h2>Evidence</h2><div class="list">${i.evidence.map(e => `<div class="li"><span style="color:var(--muted)">${ICON.audit.replace('<svg', '<svg width="16" height="16"')}</span><span class="grow">${esc(e)}<small class="mono">sha256 ${hash(e)}${hash(e + i.id).slice(0, 8)}…</small></span></div>`).join('')}</div></section>
+      </div></div>`;
+}
+
+/* ======================================================================
+   AUDIT LOG
+   ====================================================================== */
+function viewAudit() {
+  const q = UI.auditQ.toLowerCase();
+  const list = S.audit.filter(e => (UI.auditType === 'All' || e.type === UI.auditType) && (!q || (e.text + e.actor + e.ref).toLowerCase().includes(q)));
+  const refHref = r => /^A\d|^S\d|^G\d/.test(r) ? '#agent-' + r : /^INC-/.test(r) ? '#incident-' + r : /^R-/.test(r) && S.reviews.find(x => x.id === r) ? '#review-' + r : '';
+  return `<div class="ph"><div><h1>Audit log</h1><p>A tamper-evident record of every scan, decision, policy change and incident. Each entry is chained to the one before it, so any edit breaks the chain.</p></div>
+    <div class="actions"><button class="btn" data-act="verify">${ICON.shield} Verify chain</button><button class="btn primary" data-act="export">${ICON.download} Export auditor pack</button></div></div>
+    <div class="filters"><span class="seg">${['All', 'Scan', 'Registry', 'Review', 'Incident', 'Policy'].map(k => `<button data-audt="${k}" class="${UI.auditType === k ? 'on' : ''}">${k}</button>`).join('')}</span><input type="search" id="auditQ" placeholder="Search events" value="${esc(UI.auditQ)}"><span class="verify" id="verifyOut" style="margin-left:auto"></span></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Time (AEDT)</th><th>Actor</th><th>Type</th><th>Event</th><th>Reference</th><th>Entry hash</th></tr></thead><tbody>${list.map(e => { const h = refHref(e.ref);
+      return `<tr><td class="mono" style="white-space:nowrap">${esc(e.ts)}</td><td class="small">${esc(e.actor)}</td><td>${chip(e.type, e.type === 'Incident' ? 'crit' : e.type === 'Review' ? 'ok' : e.type === 'Scan' ? 'acc' : e.type === 'Policy' ? 'warn' : 'info')}</td><td>${esc(e.text)}</td><td class="mono">${h ? `<a href="${h}">${esc(e.ref)}</a>` : esc(e.ref)}</td><td class="chain" title="prev ${e.prev}">${e.hash}</td></tr>`; }).join('') || '<tr><td colspan="6" class="empty">No matching events.</td></tr>'}</tbody></table></div>`;
+}
+function verifyChain() {
+  let prev = '0000000000000000', ok = true;
+  for (let i = S.audit.length - 1; i >= 0; i--) { const e = S.audit[i]; const h = hash(prev + '|' + e.ts + '|' + e.actor + '|' + e.type + '|' + e.text + '|' + (e.ref || '')); if (e.prev !== prev || e.hash !== h) { ok = false; break; } prev = e.hash; }
+  return ok;
+}
+function buildPack() {
+  return { tenant: ORG.tenant, organisation: ORG.name, generated: nowStamp() + ' AEDT', generatedBy: ME.name + ', ' + ME.role, period: '2026-07-01 to 2026-10-29',
+    frameworks: Object.values(REGS), chainHead: S.audit[0].hash, chainVerified: verifyChain(),
+    inventory: S.agents.map(a => ({ id: a.id, name: a.name, platform: PLATFORMS[a.platform].name, owner: a.owner, businessUnit: a.bu, risk: a.risk, status: a.status, trustScore: a.status === 'Shadow' ? null : trust(a), models: a.models.map(m => MODELS[m].name), tools: a.tools.map(t => TOOLS[t].name), dataClasses: uniq(a.data.map(d => DATA[d].cls)) })),
+    decisions: S.reviews.filter(r => r.status !== 'Pending').map(r => ({ id: r.id, agent: r.agent, decision: r.status, history: r.notes })),
+    incidents: S.incidents.map(i => ({ id: i.id, title: i.title, severity: i.sev, status: i.status, opened: i.opened, closed: i.closed, rootCause: i.rootCause, actions: i.actions.map(x => ({ action: x[0], status: x[1], owner: x[2] })), controls: i.controls })),
+    auditLog: S.audit };
+}
+function openExport() {
+  const pack = buildPack(), json = JSON.stringify(pack, null, 2);
+  openDrawer(`<header><span>${ICON.download.replace('<svg', '<svg width="22" height="22"')}</span><h2>Auditor pack</h2><button class="btn sm x" data-act="close" aria-label="Close">${ICON.x}</button></header>
+    <div class="body"><p style="margin-top:0">Evidence pack for internal audit, APRA or external assurance. Generated from the live registry and signed with the current chain head.</p>
+      <div class="scan-stats"><div><b>${pack.inventory.length}</b><small>Agents in inventory</small></div><div><b>${pack.decisions.length}</b><small>Review decisions</small></div><div><b>${pack.incidents.length}</b><small>Incident cases</small></div><div><b>${pack.auditLog.length}</b><small>Audit events</small></div></div>
+      <div class="form-grid" style="margin-bottom:14px"><div><small>Period</small>${pack.period}</div><div><small>Chain head</small><span class="mono">${pack.chainHead}</span></div><div><small>Chain integrity</small>${pack.chainVerified ? statusChip('Approved').replace('Approved', 'Verified, no gaps') : statusChip('Rejected').replace('Rejected', 'Broken chain')}</div><div><small>Frameworks</small>${pack.frameworks.length} mapped</div></div>
+      <pre class="console" style="height:300px;white-space:pre-wrap">${esc(json.slice(0, 2600))}\n…</pre></div>
+    <footer><button class="btn" data-act="copypack">Copy JSON</button><button class="btn primary" data-act="dlpack">${ICON.download} Download JSON</button></footer>`);
+  openExport.json = json;
+  audit(ME.name, 'Policy', `Auditor pack generated (chain head ${pack.chainHead})`, '');
+}
+
+/* ---------- global search ---------- */
+function search(q) {
+  const box = $('#searchResults'); q = q.trim().toLowerCase();
+  if (q.length < 2) { box.hidden = true; return; }
+  const res = [];
+  S.agents.filter(a => (a.name + a.bu + a.owner).toLowerCase().includes(q)).forEach(a => res.push([pt(a.platform, 'sm'), a.name, 'Agent · ' + a.bu, '#agent-' + a.id]));
+  mcpInUse().filter(m => MCP[m].name.toLowerCase().includes(q)).forEach(m => { const u = S.agents.find(a => a.tools.some(t => TOOLS[t].via === m)); res.push([pt(MCP[m].host, 'sm'), MCP[m].name, 'MCP server · used by ' + u.name, '#agent-' + u.id]); });
+  Object.keys(TOOLS).filter(t => TOOLS[t].name.toLowerCase().includes(q)).forEach(t => { const u = S.agents.find(a => a.tools.includes(t)); if (u) res.push([pt(u.platform, 'sm'), TOOLS[t].name, 'Tool · ' + u.name, '#agent-' + u.id]); });
+  S.incidents.filter(i => (i.id + i.title).toLowerCase().includes(q)).forEach(i => res.push(['<span class="pt sm" style="background:var(--crit)">!</span>', i.title, i.id, '#incident-' + i.id]));
+  box.innerHTML = res.slice(0, 10).map(([ic, t, s, h]) => `<button data-href="${h}">${ic}<span><b style="font-weight:500;display:block">${esc(t)}</b><small class="muted">${esc(s)}</small></span></button>`).join('') || '<div class="empty" style="padding:16px">No matches</div>';
+  box.hidden = false;
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('button, a, tr[data-href], [data-go]');
+  if (!t) { if (!e.target.closest('.search')) $('#searchResults').hidden = true; return; }
+  if (!t.closest('.search')) $('#searchResults').hidden = true;
+  const d = t.dataset;
+  if (d.href && t.tagName !== 'A') { location.hash = d.href.slice(1); $('#searchResults').hidden = true; $('#globalSearch').value = ''; return; }
+  if (d.go) { if (d.filterRisk || d.filterStatus) { UI.catTab = 'agents'; UI.catRisk = d.filterRisk || ''; UI.catStatus = d.filterStatus || ''; UI.catQ = ''; UI.catPlat = ''; UI.catBU = ''; } go(d.go); return; }
+  if (d.sort) { UI.towerSort = d.sort; rerender(); return; }
+  if (d.regtab) { UI.regTab = d.regtab; rerender(); return; }
+  if (d.cattab) { UI.catTab = d.cattab; rerender(); return; }
+  if (d.catview) { UI.catView = d.catview; rerender(); return; }
+  if (d.agenttab) { agentTab = d.agenttab; if (cy) { cy.destroy(); cy = null; } $$('[data-agenttab]').forEach(b => b.classList.toggle('on', b === t)); const a = agentById(location.hash.slice(7)); $('#agentTab').innerHTML = agentTabHtml(a); mountAgent(a.id); return; }
+  if (d.g && cy) { if (d.g === 'fit') cy.animate({ fit: { padding: 36 } }, { duration: 300 }); if (d.g === 'reset') { const a = agentById(location.hash.slice(7)); cy.elements().remove(); cy.add(baseElements(a)); layout(); $('#inspector').innerHTML = inspectAgent(a); } if (d.g === 'expand') { const a = agentById(location.hash.slice(7)); cy.nodes().forEach(n => { if (['tool', 'skill', 'data', 'model'].includes(n.data('type'))) expandNode(n, a, true); }); cy.elements().removeClass('faded'); layout(); } return; }
+  if (d.pick) {
+    const k = d.pick, cs = S.connectors.filter(c => c.platform === k);
+    if (!cs.length) { toast(`${PLATFORMS[k].name} connector is in the library. This demo tenant scans AWS and Google Cloud.`); return; }
+    SC.platform = k; SC.conn = (cs.find(c => c.status === 'new') || cs[0]).id; SC.fromPick = true; SC.step = 2; SC.tested = false; drawScan(); return;
+  }
+  if (d.rev) { UI.revSel = d.rev; if (location.hash !== '#reviews') { history.replaceState(null, '', '#reviews'); } rerender(); return; }
+  if (d.revf) { UI.revFilter = d.revf; UI.revSel = null; if (location.hash !== '#reviews') history.replaceState(null, '', '#reviews'); rerender(); return; }
+  if (d.dec) { decide(d.dec); return; }
+  if (d.audt) { UI.auditType = d.audt; rerender(); return; }
+  switch (d.act) {
+    case 'scan': openScan(d.conn); break;
+    case 'close': closeDrawer(); if ($('#view')) rerender(); break;
+    case 'back': SC.step = SC.step === 2 ? 1 : SC.step - 1; drawScan(); break;
+    case 'test': SC.tested = true; drawScan(); break;
+    case 'next': SC.step = 3; drawScan(); break;
+    case 'start': { const c = S.connectors.find(x => x.id === SC.conn); SC.rescan = c.status !== 'new'; SC.step = 4; SC.lines = []; SC.idx = 0; SC.found = 0; SC.warn = 0; drawScan(); runScan(); break; }
+    case 'register': registerScan(); break;
+    case 'clearcat': UI.catQ = UI.catPlat = UI.catBU = UI.catRisk = UI.catStatus = ''; rerender(); break;
+    case 'suspend': { const a = agentById(d.id); a.status = 'Suspended'; audit(ME.name, 'Registry', `${a.id} ${a.name} suspended; credentials revoked at platform`, a.id); save(); toast(`${a.name} suspended`); rerender(); break; }
+    case 'reinstate': { const a = agentById(d.id); a.status = 'Approved with conditions'; audit(ME.name, 'Registry', `${a.id} ${a.name} reinstated with conditions`, a.id); save(); toast(`${a.name} reinstated`); rerender(); break; }
+    case 'toreview': { const a = agentById(d.id); const id = 'R-' + (S.seqR++); const r = reviewFromAgent(id, a); r.source = 'Re-review'; r.submitter = ME.name; S.reviews.unshift(r); audit(ME.name, 'Review', `${id} opened: re-review of ${a.name}`, id); save(); UI.revFilter = 'Pending'; go('review-' + id); break; }
+    case 'advance': { const i = S.incidents.find(x => x.id === d.id), [n] = NEXT_STATE[i.status]; i.status = n; i.timeline.push([nowStamp(), `Status changed to ${n.toLowerCase()} by ${ME.name}`]); if (n === 'Closed') i.closed = '2026-10-29'; audit(ME.name, 'Incident', `${i.id} ${n.toLowerCase()}`, i.id); save(); toast(`${i.id} ${n.toLowerCase()}`); rerender(); break; }
+    case 'action': { const i = S.incidents.find(x => x.id === d.id), x = i.actions[+d.k]; x[1] = x[1] === 'Open' ? 'In progress' : x[1] === 'In progress' ? 'Done' : 'Open'; audit(ME.name, 'Incident', `${i.id} action "${x[0]}" → ${x[1].toLowerCase()}`, i.id); save(); rerender(); break; }
+    case 'pack': audit(ME.name, 'Policy', `${d.id} added to auditor pack`, d.id); save(); toast(`${d.id} added to the auditor pack`); break;
+    case 'verify': { const ok = verifyChain(); $('#verifyOut').innerHTML = ok ? `${ICON.shield.replace('<svg', '<svg width="16" height="16"')} Chain verified · ${S.audit.length} events · head ${S.audit[0].hash.slice(0, 8)}` : '<span style="color:var(--crit)">Chain broken</span>'; break; }
+    case 'export': openExport(); break;
+    case 'copypack': { const done = () => toast('Auditor pack copied'); try { navigator.clipboard.writeText(openExport.json).then(done, () => toast('Copy blocked here. Use Download instead.')); } catch (err) { toast('Copy blocked here. Use Download instead.'); } break; }
+    case 'dlpack': { try { const b = new Blob([openExport.json], { type: 'application/json' }); const u = URL.createObjectURL(b); const l = document.createElement('a'); l.href = u; l.download = 'harbourline-auditor-pack-2026-10-29.json'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(u), 1000); toast('Download started'); } catch (err) { toast('Downloads are blocked in this viewer. Use Copy JSON.'); } break; }
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset.method) { t.checked ? SC.methods.add(t.dataset.method) : SC.methods.delete(t.dataset.method); return; }
+  if (t.id === 'owOnly') { UI.owOnly = t.checked; rerender(); return; }
+  if (['catPlat', 'catBU', 'catRisk', 'catStatus'].includes(t.id)) { UI[t.id] = t.value; rerender(); }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'globalSearch') search(t.value);
+  if (t.id === 'catQ' || t.id === 'auditQ') { UI[t.id] = t.value; const pos = t.selectionStart; rerender(); const n = $('#' + t.id); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (err) {} } }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#drawer').hidden) closeDrawer(); $('#searchResults').hidden = true; } });
+$('#scrim').addEventListener('click', () => { if (SC && SC.step === 4) return; closeDrawer(); });
+$('#resetDemo').addEventListener('click', () => { S = fresh(); save(); agentTab = 'graph'; Object.assign(UI, { catRisk: '', catStatus: '', revSel: null }); toast('Demo reset to the starting state'); go('tower'); });
+
+window.__nexusGraph = () => cy;
+route();
+})();
+
+</script>
+
+</body>
+</html>
